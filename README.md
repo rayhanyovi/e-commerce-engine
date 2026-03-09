@@ -30,10 +30,10 @@ Yang seharusnya berubah per client:
 
 ## Current Scope
 
-Sudah tersedia atau baseline-ready:
+Implemented and active:
 
 - storefront shell
-- admin shell
+- admin dashboard and admin shell
 - auth
 - catalog
 - inventory
@@ -42,16 +42,19 @@ Sudah tersedia atau baseline-ready:
 - manual payment review
 - orders
 - promotions
-
-Masih pending atau partial:
-
 - settings
 - audit
 - addresses
-- admin dashboard
-- users admin
-- product create/edit/variant management
+- users admin registry
+- product create/edit flow
+
+Still open:
+
+- storefront/admin E2E coverage
 - `FREE_PRODUCT` promotion support
+- final guest checkout decision
+- audit log schema cleanup
+- final legacy cutover and archive of `ecommercestarter/`
 
 ## Architecture
 
@@ -102,6 +105,7 @@ Dengan model ini, effort berikutnya harus lebih banyak di layer UI daripada meng
 ```bash
 npm run dev
 npm run build
+npm run start
 npm run lint
 npm test
 ```
@@ -111,6 +115,7 @@ Database bootstrap for local development:
 1. Copy `.env.local.example` to `.env.local`.
 
 ```bash
+npm run db:generate
 npm run db:migrate
 npm run db:seed
 npm run dev
@@ -127,9 +132,34 @@ Environment templates:
 - `.env.staging.example`: staging baseline with non-local URLs
 - `.env.production.example`: production baseline with deployment placeholders
 
+## Deploy Baseline
+
+Recommended production or staging deployment sequence:
+
+1. Copy the right environment template and set `DATABASE_URL`, `AUTH_SECRET`, and deployment URLs.
+2. Install dependencies with `npm ci`.
+3. Generate the Prisma client with `npm run db:generate`.
+4. Apply database migrations with `npm run db:deploy`.
+5. Build the app with `npm run build`.
+6. Start the app with `npm run start`.
+
+Recommended post-deploy smoke checks:
+
+- open `/`
+- open `/products`
+- verify `/login` and `/register`
+- verify `/admin` with an admin session
+- check `/api/products`
+- check `/api/admin/dashboard`
+
+Notes:
+
+- `npm run db:seed` is meant for local bootstrap or controlled non-production setup, not for blind production use.
+- This baseline assumes same-origin deployment for storefront, admin, and API in the same Next.js app.
+
 ## Docker
 
-Local Docker setup sekarang tersedia untuk app + Postgres.
+Local Docker setup tersedia untuk app + Postgres.
 
 ```bash
 docker compose up --build
@@ -143,6 +173,8 @@ Compose akan:
 - menjalankan `prisma seed`
 - start Next.js app di `http://localhost:3000`
 
+Docker Compose ini diposisikan untuk local bootstrap dan quick verification, bukan sebagai production orchestrator final.
+
 Kalau hanya mau build image-nya:
 
 ```bash
@@ -152,6 +184,7 @@ docker build -t ecommerce-engine:latest .
 ## Project Docs
 
 - [overview.md](./overview.md): technical positioning, architecture, domain flows, and reuse model
+- [parity_checklist.md](./parity_checklist.md): route and endpoint parity matrix against `ecommercestarter`
 - [to_dos.md](./to_dos.md): migration and implementation backlog
 - [workflow_contract.md](./workflow_contract.md): collaboration and commit rules
 

@@ -314,7 +314,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [ ] settings update
 - [ ] Jalankan build, lint, test, dan typecheck final.
 - [ ] Tentukan kapan `ecommercestarter` boleh diarsipkan atau dihapus dari workspace aktif.
-- [ ] Update dokumentasi run/deploy untuk codebase final.
+- [x] Update dokumentasi run/deploy untuk codebase final.
 
 ## 26. Specific Known Fixes to Carry Into Migration
 
