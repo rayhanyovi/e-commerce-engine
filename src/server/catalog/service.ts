@@ -1,9 +1,12 @@
 import { Prisma, type Product } from "@prisma/client";
 
 import {
+  ErrorCodes,
   type CreateCategoryDto,
+  type CreateProductDto,
   type ProductListQuery,
   type UpdateCategoryDto,
+  type UpdateProductDto,
 } from "@/shared/contracts";
 import { prisma } from "@/server/db";
 import { getEffectivePrice } from "@/server/domain";
@@ -162,6 +165,316 @@ function serializeProductListItem<T extends ProductWithVariant & { variants: Arr
   };
 }
 
+type DbClient = Prisma.TransactionClient | typeof prisma;
+type NormalizedProductOptionDefinitionInput = {
+  name: string;
+  position: number;
+  values: string[];
+};
+type NormalizedProductVariantInput = {
+  sku: string | null;
+  priceOverride: number | null;
+  stockOnHand: number;
+  isActive: boolean;
+  optionValues: string[];
+};
+
+function normalizeOptionDefinitionInput(
+  optionDefinitions: CreateProductDto["optionDefinitions"] | UpdateProductDto["optionDefinitions"],
+): NormalizedProductOptionDefinitionInput[] {
+  return (optionDefinitions ?? [])
+    .map((definition, index) => ({
+      name: definition.name.trim(),
+      position: definition.position ?? index,
+      values: Array.from(
+        new Set(
+          definition.values
+            .map((value) => value.trim())
+            .filter(Boolean),
+        ),
+      ),
+    }))
+    .filter((definition) => definition.name && definition.values.length);
+}
+
+function normalizeVariantInput(
+  variants: CreateProductDto["variants"] | UpdateProductDto["variants"],
+): NormalizedProductVariantInput[] {
+  return (variants ?? []).map((variant) => ({
+    sku: variant.sku?.trim() || null,
+    priceOverride: variant.priceOverride ?? null,
+    stockOnHand: variant.stockOnHand ?? 0,
+    isActive: variant.isActive ?? true,
+    optionValues: Array.from(
+      new Set(
+        variant.optionValues
+          .map((value) => value.trim())
+          .filter(Boolean),
+      ),
+    ),
+  }));
+}
+
+async function assertCategoryExists(categoryId: string) {
+  const category = await prisma.category.findUnique({
+    where: { id: categoryId },
+    select: { id: true },
+  });
+
+  if (!category) {
+    throw new AppError(404, ErrorCodes.NOT_FOUND, "Category not found");
+  }
+}
+
+async function assertProductSlugAvailable(slug: string, excludedProductId?: string) {
+  const existingProduct = await prisma.product.findFirst({
+    where: {
+      slug,
+      ...(excludedProductId ? { NOT: { id: excludedProductId } } : {}),
+    },
+    select: { id: true },
+  });
+
+  if (existingProduct) {
+    throw new AppError(409, ErrorCodes.VALIDATION_ERROR, "Product slug already exists");
+  }
+}
+
+async function assertVariantSkusAvailable(
+  variants: NormalizedProductVariantInput[],
+  excludedProductId?: string,
+) {
+  const skus = variants
+    .map((variant) => variant.sku)
+    .filter((sku): sku is string => Boolean(sku));
+
+  const duplicatedSku = skus.find((sku, index) => skus.indexOf(sku) !== index);
+
+  if (duplicatedSku) {
+    throw new AppError(409, ErrorCodes.VALIDATION_ERROR, `Variant SKU already exists: ${duplicatedSku}`);
+  }
+
+  if (!skus.length) {
+    return;
+  }
+
+  const existingVariants = await prisma.productVariant.findMany({
+    where: {
+      sku: { in: skus },
+      ...(excludedProductId ? { productId: { not: excludedProductId } } : {}),
+    },
+    select: { sku: true },
+  });
+
+  if (existingVariants[0]?.sku) {
+    throw new AppError(
+      409,
+      ErrorCodes.VALIDATION_ERROR,
+      `Variant SKU already exists: ${existingVariants[0].sku}`,
+    );
+  }
+}
+
+function validateOptionDefinitionsAndVariants(
+  optionDefinitions: NormalizedProductOptionDefinitionInput[],
+  variants: NormalizedProductVariantInput[],
+) {
+  const optionValueToDefinition = new Map<string, string>();
+  const duplicateOptionValue = new Set<string>();
+
+  for (const definition of optionDefinitions) {
+    for (const value of definition.values) {
+      if (optionValueToDefinition.has(value)) {
+        duplicateOptionValue.add(value);
+        continue;
+      }
+
+      optionValueToDefinition.set(value, definition.name);
+    }
+  }
+
+  if (duplicateOptionValue.size) {
+    throw new AppError(
+      400,
+      ErrorCodes.VALIDATION_ERROR,
+      `Option values must be unique per product. Duplicate values: ${Array.from(duplicateOptionValue).join(", ")}`,
+    );
+  }
+
+  if (!optionDefinitions.length) {
+    const variantWithUnexpectedOptions = variants.find((variant) => variant.optionValues.length);
+
+    if (variantWithUnexpectedOptions) {
+      throw new AppError(
+        400,
+        ErrorCodes.VALIDATION_ERROR,
+        "Variants cannot reference option values before option definitions are configured",
+      );
+    }
+
+    return;
+  }
+
+  const expectedDefinitionCount = optionDefinitions.length;
+  const seenCombinations = new Set<string>();
+
+  for (const variant of variants) {
+    if (variant.optionValues.length !== expectedDefinitionCount) {
+      throw new AppError(
+        400,
+        ErrorCodes.VALIDATION_ERROR,
+        "Each variant must select exactly one value from every option definition",
+      );
+    }
+
+    const definitionsForVariant = new Set<string>();
+
+    for (const optionValue of variant.optionValues) {
+      const definitionName = optionValueToDefinition.get(optionValue);
+
+      if (!definitionName) {
+        throw new AppError(
+          400,
+          ErrorCodes.VALIDATION_ERROR,
+          `Unknown option value on variant: ${optionValue}`,
+        );
+      }
+
+      if (definitionsForVariant.has(definitionName)) {
+        throw new AppError(
+          400,
+          ErrorCodes.VALIDATION_ERROR,
+          "Each variant must use only one value per option definition",
+        );
+      }
+
+      definitionsForVariant.add(definitionName);
+    }
+
+    const combinationKey = [...variant.optionValues].sort().join("::");
+
+    if (seenCombinations.has(combinationKey)) {
+      throw new AppError(
+        409,
+        ErrorCodes.VALIDATION_ERROR,
+        "Variant combinations must be unique within the same product",
+      );
+    }
+
+    seenCombinations.add(combinationKey);
+  }
+}
+
+async function createProductStructure(
+  db: DbClient,
+  productId: string,
+  optionDefinitions: NormalizedProductOptionDefinitionInput[],
+  variants: NormalizedProductVariantInput[],
+) {
+  const createdDefinitions = [];
+
+  for (const definition of optionDefinitions) {
+    const createdDefinition = await db.productOptionDefinition.create({
+      data: {
+        productId,
+        name: definition.name,
+        position: definition.position,
+        values: {
+          create: definition.values.map((value) => ({ value })),
+        },
+      },
+      include: {
+        values: true,
+      },
+    });
+
+    createdDefinitions.push(createdDefinition);
+  }
+
+  const optionValueMap = new Map<string, string>();
+
+  for (const definition of createdDefinitions) {
+    for (const value of definition.values) {
+      optionValueMap.set(value.value, value.id);
+    }
+  }
+
+  for (const variant of variants) {
+    const createdVariant = await db.productVariant.create({
+      data: {
+        productId,
+        sku: variant.sku,
+        priceOverride: variant.priceOverride,
+        stockOnHand: variant.stockOnHand,
+        isActive: variant.isActive,
+      },
+    });
+
+    for (const optionValue of variant.optionValues) {
+      const optionValueId = optionValueMap.get(optionValue);
+
+      if (!optionValueId) {
+        throw new AppError(
+          400,
+          ErrorCodes.VALIDATION_ERROR,
+          `Unknown option value on variant: ${optionValue}`,
+        );
+      }
+
+      await db.variantOptionCombination.create({
+        data: {
+          variantId: createdVariant.id,
+          optionValueId,
+        },
+      });
+    }
+  }
+}
+
+async function assertProductStructureCanBeReplaced(productId: string) {
+  const dependencySnapshot = await prisma.product.findUnique({
+    where: { id: productId },
+    select: {
+      _count: {
+        select: {
+          cartItems: true,
+          orderItems: true,
+        },
+      },
+      variants: {
+        select: {
+          _count: {
+            select: {
+              reservations: true,
+              stockMovements: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!dependencySnapshot) {
+    throw new AppError(404, ErrorCodes.NOT_FOUND, "Product not found");
+  }
+
+  const hasVariantDependencies = dependencySnapshot.variants.some(
+    (variant) => variant._count.reservations > 0 || variant._count.stockMovements > 0,
+  );
+
+  if (
+    dependencySnapshot._count.cartItems > 0 ||
+    dependencySnapshot._count.orderItems > 0 ||
+    hasVariantDependencies
+  ) {
+    throw new AppError(
+      409,
+      ErrorCodes.VALIDATION_ERROR,
+      "Product variants cannot be rebuilt after the product has active cart, order, or stock history",
+    );
+  }
+}
+
 export async function listPublicCategories() {
   return prisma.category.findMany({
     where: { isActive: true },
@@ -231,6 +544,153 @@ export async function deleteCategory(id: string) {
   }
 
   await prisma.category.delete({
+    where: { id },
+  });
+
+  return { deleted: true };
+}
+
+export async function createProduct(dto: CreateProductDto) {
+  await assertCategoryExists(dto.categoryId);
+  await assertProductSlugAvailable(dto.slug);
+
+  const optionDefinitions = normalizeOptionDefinitionInput(dto.optionDefinitions);
+  const variants = normalizeVariantInput(dto.variants);
+
+  validateOptionDefinitionsAndVariants(optionDefinitions, variants);
+  await assertVariantSkusAvailable(variants);
+
+  return prisma.$transaction(async (tx) => {
+    const product = await tx.product.create({
+      data: {
+        categoryId: dto.categoryId,
+        name: dto.name.trim(),
+        slug: dto.slug.trim(),
+        description: dto.description?.trim() || null,
+        basePrice: dto.basePrice,
+        promoPrice: dto.promoPrice ?? null,
+        isActive: dto.isActive ?? true,
+        mediaUrls: dto.mediaUrls ?? [],
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    await createProductStructure(tx, product.id, optionDefinitions, variants);
+
+    return getAdminProductById(product.id);
+  });
+}
+
+export async function updateProduct(id: string, dto: UpdateProductDto) {
+  const existingProduct = await prisma.product.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      categoryId: true,
+      slug: true,
+    },
+  });
+
+  if (!existingProduct) {
+    throw new AppError(404, ErrorCodes.NOT_FOUND, "Product not found");
+  }
+
+  if (dto.categoryId) {
+    await assertCategoryExists(dto.categoryId);
+  }
+
+  if (dto.slug && dto.slug !== existingProduct.slug) {
+    await assertProductSlugAvailable(dto.slug, id);
+  }
+
+  const shouldReplaceStructure = dto.optionDefinitions !== undefined || dto.variants !== undefined;
+  const optionDefinitions = normalizeOptionDefinitionInput(dto.optionDefinitions);
+  const variants = normalizeVariantInput(dto.variants);
+
+  if (shouldReplaceStructure) {
+    validateOptionDefinitionsAndVariants(optionDefinitions, variants);
+    await assertVariantSkusAvailable(variants, id);
+    await assertProductStructureCanBeReplaced(id);
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.product.update({
+      where: { id },
+      data: {
+        categoryId: dto.categoryId ?? undefined,
+        name: dto.name?.trim() || undefined,
+        slug: dto.slug?.trim() || undefined,
+        description: dto.description === undefined ? undefined : dto.description.trim() || null,
+        basePrice: dto.basePrice,
+        promoPrice: dto.promoPrice === undefined ? undefined : dto.promoPrice ?? null,
+        isActive: dto.isActive,
+        mediaUrls: dto.mediaUrls,
+      },
+    });
+
+    if (!shouldReplaceStructure) {
+      return;
+    }
+
+    await tx.productVariant.deleteMany({
+      where: { productId: id },
+    });
+    await tx.productOptionDefinition.deleteMany({
+      where: { productId: id },
+    });
+
+    await createProductStructure(tx, id, optionDefinitions, variants);
+  });
+
+  return getAdminProductById(id);
+}
+
+export async function deleteProduct(id: string) {
+  const product = await prisma.product.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      _count: {
+        select: {
+          cartItems: true,
+          orderItems: true,
+        },
+      },
+      variants: {
+        select: {
+          _count: {
+            select: {
+              reservations: true,
+              stockMovements: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!product) {
+    throw new AppError(404, ErrorCodes.NOT_FOUND, "Product not found");
+  }
+
+  const hasDependencies =
+    product._count.cartItems > 0 ||
+    product._count.orderItems > 0 ||
+    product.variants.some(
+      (variant) => variant._count.reservations > 0 || variant._count.stockMovements > 0,
+    );
+
+  if (hasDependencies) {
+    throw new AppError(
+      409,
+      ErrorCodes.VALIDATION_ERROR,
+      "Product cannot be deleted after it has cart, order, or stock history",
+    );
+  }
+
+  await prisma.product.delete({
     where: { id },
   });
 

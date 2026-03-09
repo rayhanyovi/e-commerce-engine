@@ -104,13 +104,13 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Port product public listing dengan pagination, search, category filter, sort, price filter.
 - [x] Port product detail by slug.
 - [x] Port admin product list penuh.
-- [ ] Port admin product create.
-- [ ] Port admin product edit.
-- [ ] Port admin product delete.
+- [x] Port admin product create.
+- [x] Port admin product edit.
+- [x] Port admin product delete.
 - [ ] Port variant create/update/delete.
-- [ ] Perbaiki logic persistence option definitions dan variant combinations.
-- [ ] Ganti implementasi yang salah dari `variantOptionValue` ke model yang benar sesuai Prisma.
-- [ ] Tambahkan validasi uniqueness slug dan SKU secara konsisten.
+- [x] Perbaiki logic persistence option definitions dan variant combinations.
+- [x] Ganti implementasi yang salah dari `variantOptionValue` ke model yang benar sesuai Prisma.
+- [x] Tambahkan validasi uniqueness slug dan SKU secara konsisten.
 
 ## 9. Cart Domain
 
