@@ -1,3 +1,4 @@
+export * from "@/server/addresses";
 export * from "@/server/auth";
 export * from "@/server/audit";
 export * from "@/server/catalog";

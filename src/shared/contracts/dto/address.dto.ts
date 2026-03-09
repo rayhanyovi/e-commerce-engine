@@ -20,3 +20,12 @@ export type CreateAddressDto = z.infer<typeof CreateAddressSchema>;
 export const UpdateAddressSchema = CreateAddressSchema.partial();
 
 export type UpdateAddressDto = z.infer<typeof UpdateAddressSchema>;
+
+export const AddressRecordSchema = AddressInputSchema.extend({
+  id: z.string().cuid(),
+  isDefault: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export type AddressRecord = z.infer<typeof AddressRecordSchema>;

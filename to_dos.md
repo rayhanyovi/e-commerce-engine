@@ -193,11 +193,11 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 15. Addresses Domain
 
-- [ ] Port my addresses list.
-- [ ] Port create address.
-- [ ] Port update address.
-- [ ] Port delete address.
-- [ ] Pertahankan logic default address.
+- [x] Port my addresses list.
+- [x] Port create address.
+- [x] Port update address.
+- [x] Port delete address.
+- [x] Pertahankan logic default address.
 - [ ] Tambahkan address selection di checkout yang konsisten dengan saved/new flow.
 
 ## 16. Store Config and Settings
