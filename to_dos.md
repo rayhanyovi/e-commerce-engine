@@ -73,13 +73,13 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [ ] `inventory`
 - [ ] `settings`
 - [ ] `audit`
-- [ ] Port domain helpers:
-- [ ] `getEffectivePrice`
-- [ ] `isValidStatusTransition`
-- [ ] `calculateDiscount`
-- [ ] `isPromotionEligible`
-- [ ] `calculateShipping`
-- [ ] `checkStockAvailability`
+- [x] Port domain helpers:
+- [x] `getEffectivePrice`
+- [x] `isValidStatusTransition`
+- [x] `calculateDiscount`
+- [x] `isPromotionEligible`
+- [x] `calculateShipping`
+- [x] `checkStockAvailability`
 - [ ] Tambahkan error normalizer yang konsisten.
 - [ ] Tambahkan request logging dan request ID di Next layer bila dibutuhkan.
 
