@@ -250,10 +250,10 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 20. Client State and Hooks Re-Design
 
-- [ ] Audit hook mana yang tetap relevan di Next app.
+- [x] Audit hook mana yang tetap relevan di Next app.
 - [ ] Ubah hook data-heavy menjadi server-driven bila memungkinkan.
 - [ ] Simpan hook client-only untuk form/dialog/local UI state.
-- [ ] Buat wrapper auth/session hook yang SSR-safe.
+- [x] Buat wrapper auth/session hook yang SSR-safe.
 - [x] Buat cart hook baru yang tidak hard-coded pada `localStorage` saat render server.
 - [ ] Pastikan query invalidation key konsisten bila React Query tetap dipakai.
 

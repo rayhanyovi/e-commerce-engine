@@ -4,12 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
-import type { ApiEnvelope } from "@/shared/contracts";
-import type { AuthUser } from "@/server/auth";
-
-interface AuthSuccessPayload {
-  user: AuthUser;
-}
+import { registerRequest } from "@/lib/auth/client";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -26,27 +21,14 @@ export function RegisterForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          phone: phone || undefined,
-        }),
+      const result = await registerRequest({
+        name,
+        email,
+        password,
+        phone: phone || undefined,
       });
-      const payload = (await response.json()) as ApiEnvelope<AuthSuccessPayload>;
 
-      if (!response.ok || !payload.success) {
-        const message =
-          payload.success === false ? payload.error.message : "Registration failed";
-        throw new Error(message);
-      }
-
-      router.push(payload.data.user.role === "ADMIN" ? "/admin" : "/orders");
+      router.push(result.user.role === "ADMIN" ? "/admin" : "/orders");
       router.refresh();
     } catch (error) {
       setErrorMessage(

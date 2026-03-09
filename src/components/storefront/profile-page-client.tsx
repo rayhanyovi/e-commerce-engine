@@ -4,11 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { DataState } from "@/components/ui/data-state";
-import {
-  getMyProfileRequest,
-  updateMyProfileRequest,
-  type ProfileRecord,
-} from "@/lib/profile/client";
+import { useSession } from "@/hooks";
+import { updateMyProfileRequest, type ProfileRecord } from "@/lib/profile/client";
 
 interface ProfileFormValue {
   name: string;
@@ -31,45 +28,22 @@ function createProfileFormValue(profile: ProfileRecord): ProfileFormValue {
 }
 
 export function ProfilePageClient() {
-  const [profile, setProfile] = useState<ProfileRecord | null>(null);
+  const { session, isLoading, error, refreshSession, setSession } = useSession();
   const [formValue, setFormValue] = useState<ProfileFormValue>({
     name: "",
     phone: "",
   });
-  const [isLoading, setIsLoading] = useState(true);
-  const [authRequired, setAuthRequired] = useState(false);
-  const [pageError, setPageError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function loadProfile() {
-    setIsLoading(true);
-    setPageError(null);
-
-    try {
-      const nextProfile = await getMyProfileRequest();
-
-      setProfile(nextProfile);
-      setFormValue(createProfileFormValue(nextProfile));
-      setAuthRequired(false);
-    } catch (error) {
-      const message = getErrorMessage(error);
-
-      if (message === "Authentication required") {
-        setAuthRequired(true);
-        setProfile(null);
-      } else {
-        setPageError(message);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   useEffect(() => {
-    void loadProfile();
-  }, []);
+    if (!session) {
+      return;
+    }
+
+    setFormValue(createProfileFormValue(session));
+  }, [session]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -83,7 +57,7 @@ export function ProfilePageClient() {
         phone: formValue.phone.trim() || undefined,
       });
 
-      setProfile(nextProfile);
+      setSession(nextProfile);
       setFormValue(createProfileFormValue(nextProfile));
       setSuccess("Profile updated");
     } catch (error) {
@@ -102,7 +76,7 @@ export function ProfilePageClient() {
     );
   }
 
-  if (authRequired) {
+  if (!isLoading && !session) {
     return (
       <DataState
         tone="error"
@@ -117,14 +91,14 @@ export function ProfilePageClient() {
     );
   }
 
-  if (pageError || !profile) {
+  if (error || !session) {
     return (
       <DataState
         tone="error"
         eyebrow="Profile Error"
         title="Profile could not be loaded"
         description={
-          pageError ??
+          error ??
           "Profile data could not be loaded right now. Try again after the database setup is ready."
         }
         actions={[
@@ -134,6 +108,8 @@ export function ProfilePageClient() {
       />
     );
   }
+
+  const profile: ProfileRecord = session;
 
   return (
     <section className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
@@ -245,7 +221,11 @@ export function ProfilePageClient() {
           </button>
           <button
             type="button"
-            onClick={() => setFormValue(createProfileFormValue(profile))}
+            onClick={() => {
+              setSuccess(null);
+              setSubmitError(null);
+              void refreshSession();
+            }}
             className="rounded-full border border-border px-5 py-3 text-sm font-medium text-muted transition hover:text-foreground"
           >
             Reset

@@ -4,14 +4,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
-import type { ApiEnvelope } from "@/shared/contracts";
-import type { AuthUser } from "@/server/auth";
+import { loginRequest, type AuthSessionRecord } from "@/lib/auth/client";
 
-interface AuthSuccessPayload {
-  user: AuthUser;
-}
-
-function getSuccessRedirect(user: AuthUser, redirectParam: string | null): string {
+function getSuccessRedirect(user: AuthSessionRecord, redirectParam: string | null): string {
   if (redirectParam?.startsWith("/")) {
     return redirectParam;
   }
@@ -33,22 +28,9 @@ export function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-      const payload = (await response.json()) as ApiEnvelope<AuthSuccessPayload>;
+      const result = await loginRequest({ email, password });
 
-      if (!response.ok || !payload.success) {
-        const message =
-          payload.success === false ? payload.error.message : "Login failed";
-        throw new Error(message);
-      }
-
-      router.push(getSuccessRedirect(payload.data.user, searchParams.get("redirect")));
+      router.push(getSuccessRedirect(result.user, searchParams.get("redirect")));
       router.refresh();
     } catch (error) {
       setErrorMessage(
