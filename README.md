@@ -83,6 +83,8 @@ Masih pending atau partial:
 - API success dan API error memakai envelope yang konsisten lewat shared contracts.
 - Proxy-level security rejection seperti invalid request origin juga mengembalikan JSON error
   envelope yang sama.
+- Frontend dan backend berjalan same-origin di Next.js App Router, jadi tidak ada layer CORS
+  terpisah yang perlu dipelihara di baseline ini.
 
 ## Working Model
 

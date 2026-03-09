@@ -72,6 +72,10 @@ Tugas layer ini:
 
 Layer ini seharusnya yang paling banyak berubah dari satu client ke client lain.
 
+Karena storefront dan API hidup di app Next yang sama, komunikasi default-nya adalah same-origin.
+Artinya baseline engine ini tidak membutuhkan boundary CORS terpisah seperti arsitektur frontend
+dan backend yang dipisah domain.
+
 #### 2. Engine layer
 
 Di `src/server/`.
