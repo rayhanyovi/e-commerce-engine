@@ -71,9 +71,8 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] `payments`
 - [x] `promotions`
 - [x] `inventory`
-- [ ] `settings`
 - [x] `settings`
-- [ ] `audit`
+- [x] `audit`
 - [x] Port domain helpers:
 - [x] `getEffectivePrice`
 - [x] `isValidStatusTransition`
@@ -212,11 +211,11 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 ## 17. Dashboard and Audit
 
 - [ ] Port admin dashboard summary.
-- [ ] Port audit log list.
-- [ ] Putuskan desain audit log final:
-- [ ] generic polymorphic log
+- [x] Port audit log list.
+- [x] Putuskan desain audit log final:
+- [x] generic polymorphic log
 - [ ] atau audit per entity type
-- [ ] Pastikan audit record dibuat untuk order, payment, promotion, inventory, dan settings changes yang penting.
+- [x] Pastikan audit record dibuat untuk order, payment, promotion, inventory, dan settings changes yang penting.
 
 ## 18. Storefront Pages
 

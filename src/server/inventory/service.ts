@@ -70,14 +70,14 @@ export async function adjustStock(dto: AdjustStockDto, actorId: string) {
 
   const type = dto.qty > 0 ? "ADJUSTMENT_IN" : "ADJUSTMENT_OUT";
 
-  const [updatedVariant, movement] = await prisma.$transaction([
-    prisma.productVariant.update({
+  const [updatedVariant, movement] = await prisma.$transaction(async (tx) => {
+    const updated = await tx.productVariant.update({
       where: { id: dto.productVariantId },
       data: {
         stockOnHand: newStock,
       },
-    }),
-    prisma.stockMovement.create({
+    });
+    const createdMovement = await tx.stockMovement.create({
       data: {
         productVariantId: dto.productVariantId,
         type,
@@ -85,8 +85,35 @@ export async function adjustStock(dto: AdjustStockDto, actorId: string) {
         reason: dto.reason,
         actorId,
       },
-    }),
-  ]);
+    });
+
+    await tx.auditLog.create({
+      data: {
+        actorType: "ADMIN",
+        actorId,
+        entityType: "INVENTORY",
+        entityId: createdMovement.id,
+        action: "INVENTORY_ADJUSTED",
+        beforeJson: {
+          productVariantId: dto.productVariantId,
+          stockOnHand: variant.stockOnHand,
+        },
+        afterJson: {
+          productVariantId: dto.productVariantId,
+          stockOnHand: updated.stockOnHand,
+          qty: dto.qty,
+          movementType: type,
+          reason: dto.reason ?? null,
+        },
+        metadata: {
+          productId: variant.product.id,
+          productName: variant.product.name,
+        },
+      },
+    });
+
+    return [updated, createdMovement] as const;
+  });
 
   return {
     variant: updatedVariant,

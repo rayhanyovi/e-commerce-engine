@@ -1,4 +1,5 @@
 export * from "./address.dto";
+export * from "./audit.dto";
 export * from "./auth.dto";
 export * from "./cart.dto";
 export * from "./category.dto";

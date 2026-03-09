@@ -1,4 +1,5 @@
 export * from "@/server/auth";
+export * from "@/server/audit";
 export * from "@/server/catalog";
 export * from "@/server/cart";
 export * from "@/server/checkout";
