@@ -66,7 +66,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] `auth`
 - [x] `catalog`
 - [x] `cart`
-- [ ] `checkout`
+- [x] `checkout`
 - [ ] `orders`
 - [ ] `payments`
 - [ ] `promotions`
@@ -125,9 +125,9 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 10. Checkout Domain
 
-- [ ] Port checkout preview.
+- [x] Port checkout preview.
 - [ ] Samakan formula preview dengan formula final place order.
-- [ ] Gunakan `StoreConfig` untuk shipping cost, ETA, free shipping threshold, max vouchers, stacking rules.
+- [x] Gunakan `StoreConfig` untuk shipping cost, ETA, free shipping threshold, max vouchers, stacking rules.
 - [ ] Implement voucher validation yang sama antara preview dan order finalization.
 - [ ] Pastikan shipping address bisa berasal dari saved address atau inline form.
 - [ ] Implement idempotency key handling di Next server layer.
