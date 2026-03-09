@@ -1,4 +1,5 @@
 import { StorefrontLayout } from "@/components/layout/storefront-layout";
+import { getServerCurrentUser } from "@/server/auth";
 import { getStoreRuntimeConfig } from "@/server/store-config";
 
 export default async function StorefrontRouteLayout({
@@ -6,7 +7,24 @@ export default async function StorefrontRouteLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const storeConfig = await getStoreRuntimeConfig();
+  const [storeConfig, currentUser] = await Promise.all([
+    getStoreRuntimeConfig(),
+    getServerCurrentUser(),
+  ]);
 
-  return <StorefrontLayout storeName={storeConfig.storeName}>{children}</StorefrontLayout>;
+  return (
+    <StorefrontLayout
+      storeName={storeConfig.storeName}
+      currentUser={
+        currentUser
+          ? {
+              name: currentUser.name,
+              role: currentUser.role,
+            }
+          : null
+      }
+    >
+      {children}
+    </StorefrontLayout>
+  );
 }

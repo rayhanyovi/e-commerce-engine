@@ -7,8 +7,21 @@ export default async function AdminLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  await requireServerAdminUser("/admin");
-  const storeConfig = await getStoreRuntimeConfig();
+  const [admin, storeConfig] = await Promise.all([
+    requireServerAdminUser("/admin"),
+    getStoreRuntimeConfig(),
+  ]);
 
-  return <AdminShell storeName={storeConfig.storeName}>{children}</AdminShell>;
+  return (
+    <AdminShell
+      storeName={storeConfig.storeName}
+      currentUser={{
+        name: admin.name,
+        email: admin.email,
+        role: "ADMIN",
+      }}
+    >
+      {children}
+    </AdminShell>
+  );
 }

@@ -318,7 +318,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 26. Specific Known Fixes to Carry Into Migration
 
-- [ ] Daftarkan dan selesaikan wiring auth middleware/session context.
+- [x] Daftarkan dan selesaikan wiring auth middleware/session context.
 - [x] Selesaikan mismatch preview total vs final order total.
 - [x] Selesaikan mismatch payment status vs order status.
 - [x] Selesaikan product variant persistence bug.

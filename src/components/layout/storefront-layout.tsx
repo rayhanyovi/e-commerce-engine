@@ -2,14 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+import { LogoutButton } from "@/components/auth/logout-button";
 import { storefrontNav } from "@/config/navigation";
 
 export function StorefrontLayout({
   children,
   storeName,
+  currentUser,
 }: {
   children: React.ReactNode;
   storeName: string;
+  currentUser: {
+    name: string;
+    role: "CUSTOMER" | "ADMIN";
+  } | null;
 }) {
   const pathname = usePathname();
 
@@ -45,18 +52,50 @@ export function StorefrontLayout({
           </nav>
 
           <div className="flex items-center gap-2">
-            <Link
-              href="/login"
-              className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted transition hover:text-foreground"
-            >
-              Login
-            </Link>
-            <Link
-              href="/admin"
-              className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-strong"
-            >
-              Admin
-            </Link>
+            {currentUser ? (
+              <>
+                <Link
+                  href="/profile"
+                  className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted transition hover:text-foreground"
+                >
+                  {currentUser.name}
+                </Link>
+                {currentUser.role === "ADMIN" ? (
+                  <Link
+                    href="/admin"
+                    className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-strong"
+                  >
+                    Admin
+                  </Link>
+                ) : (
+                  <Link
+                    href="/orders"
+                    className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-strong"
+                  >
+                    Orders
+                  </Link>
+                )}
+                <LogoutButton
+                  redirectTo="/"
+                  className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted transition hover:text-foreground disabled:cursor-not-allowed disabled:text-muted/60"
+                />
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted transition hover:text-foreground"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-strong"
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>

@@ -2,14 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+import { LogoutButton } from "@/components/auth/logout-button";
 import { adminNav } from "@/config/navigation";
 
 export function AdminShell({
   children,
   storeName,
+  currentUser,
 }: {
   children: React.ReactNode;
   storeName: string;
+  currentUser: {
+    name: string;
+    email: string;
+    role: "ADMIN";
+  };
 }) {
   const pathname = usePathname();
 
@@ -22,7 +30,7 @@ export function AdminShell({
               {storeName} Admin
             </Link>
             <p className="mt-2 text-sm text-muted">
-              Guard auth, catalog, dan inventory sudah terhubung. Domain lain menyusul batch berikutnya.
+              Session admin sekarang di-resolve dari server helper dan dipakai langsung di shell.
             </p>
           </div>
 
@@ -62,12 +70,21 @@ export function AdminShell({
                   Next app.
                 </p>
               </div>
-              <Link
-                href="/"
-                className="rounded-full border border-border px-4 py-2 text-sm text-muted transition hover:text-foreground"
-              >
-                Back to Store
-              </Link>
+              <div className="flex items-center gap-2">
+                <div className="hidden rounded-full border border-border px-4 py-2 text-sm text-muted md:block">
+                  {currentUser.name} · {currentUser.email}
+                </div>
+                <Link
+                  href="/"
+                  className="rounded-full border border-border px-4 py-2 text-sm text-muted transition hover:text-foreground"
+                >
+                  Back to Store
+                </Link>
+                <LogoutButton
+                  redirectTo="/login"
+                  className="rounded-full border border-border px-4 py-2 text-sm text-muted transition hover:text-foreground disabled:cursor-not-allowed disabled:text-muted/60"
+                />
+              </div>
             </div>
           </header>
 
