@@ -4,10 +4,22 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { startTransition, useEffect, useState } from "react";
 
+import { listMyAddressesRequest } from "@/lib/addresses/client";
 import { fetchCheckoutPreview } from "@/lib/checkout/client";
 import { formatCurrency } from "@/lib/formatters";
 import { placeOrderRequest } from "@/lib/orders/client";
-import type { CheckoutPreviewResult } from "@/shared/contracts";
+import type { AddressRecord, CheckoutPreviewResult } from "@/shared/contracts";
+
+interface ShippingAddressFormValue {
+  recipientName: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2: string;
+  district: string;
+  city: string;
+  postalCode: string;
+  notes: string;
+}
 
 function parseVoucherCodes(value: string) {
   return value
@@ -24,11 +36,8 @@ function getErrorMessage(error: unknown) {
   return "Checkout request failed";
 }
 
-export function CheckoutPageClient() {
-  const router = useRouter();
-  const [preview, setPreview] = useState<CheckoutPreviewResult | null>(null);
-  const [voucherInput, setVoucherInput] = useState("");
-  const [shippingAddress, setShippingAddress] = useState({
+function createEmptyShippingAddress(): ShippingAddressFormValue {
+  return {
     recipientName: "",
     phone: "",
     addressLine1: "",
@@ -37,7 +46,34 @@ export function CheckoutPageClient() {
     city: "",
     postalCode: "",
     notes: "",
-  });
+  };
+}
+
+function syncInlineAddress(address: AddressRecord): ShippingAddressFormValue {
+  return {
+    recipientName: address.recipientName,
+    phone: address.phone,
+    addressLine1: address.addressLine1,
+    addressLine2: address.addressLine2 ?? "",
+    district: address.district ?? "",
+    city: address.city ?? "",
+    postalCode: address.postalCode ?? "",
+    notes: address.notes ?? "",
+  };
+}
+
+export function CheckoutPageClient() {
+  const router = useRouter();
+  const [preview, setPreview] = useState<CheckoutPreviewResult | null>(null);
+  const [voucherInput, setVoucherInput] = useState("");
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddressFormValue>(
+    createEmptyShippingAddress(),
+  );
+  const [savedAddresses, setSavedAddresses] = useState<AddressRecord[]>([]);
+  const [selectedAddressMode, setSelectedAddressMode] = useState<"saved" | "new">("new");
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [isLoadingAddresses, setIsLoadingAddresses] = useState(true);
+  const [addressBookMessage, setAddressBookMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
@@ -75,8 +111,56 @@ export function CheckoutPageClient() {
     }
   }
 
+  async function loadSavedAddresses() {
+    setIsLoadingAddresses(true);
+    setAddressBookMessage(null);
+
+    try {
+      const nextAddresses = await listMyAddressesRequest();
+      const defaultAddress = nextAddresses.find((address) => address.isDefault) ?? nextAddresses[0] ?? null;
+
+      setSavedAddresses(nextAddresses);
+      setSelectedAddressMode(defaultAddress ? "saved" : "new");
+      setSelectedAddressId(defaultAddress?.id ?? null);
+
+      if (defaultAddress) {
+        setShippingAddress(syncInlineAddress(defaultAddress));
+      } else {
+        setAddressBookMessage(
+          "No saved addresses yet. Add one from the address book or enter a new shipping address below.",
+        );
+      }
+    } catch (error) {
+      const message = getErrorMessage(error);
+
+      setSavedAddresses([]);
+      setSelectedAddressId(null);
+      setSelectedAddressMode("new");
+
+      if (message === "Authentication required") {
+        setAddressBookMessage(
+          "Sign in to use saved addresses. You can still prepare a new shipping address here, but order ownership remains tied to an authenticated customer.",
+        );
+      } else {
+        setAddressBookMessage(message);
+      }
+    } finally {
+      setIsLoadingAddresses(false);
+    }
+  }
+
   async function handlePlaceOrder() {
     if (!preview) {
+      return;
+    }
+
+    if (
+      selectedAddressMode === "new" &&
+      (!shippingAddress.recipientName.trim() ||
+        !shippingAddress.phone.trim() ||
+        !shippingAddress.addressLine1.trim())
+    ) {
+      setError("Recipient name, phone, and address line 1 are required for a new shipping address");
       return;
     }
 
@@ -85,22 +169,32 @@ export function CheckoutPageClient() {
     setLastAction(null);
 
     try {
+      const orderPayload =
+        selectedAddressMode === "saved" && selectedAddressId
+          ? {
+              shippingAddressId: selectedAddressId,
+              shippingMethod: preview.shippingMethod,
+              voucherCodes: parseVoucherCodes(voucherInput),
+              paymentMethod: "MANUAL_TRANSFER" as const,
+            }
+          : {
+              shippingAddress: {
+                recipientName: shippingAddress.recipientName,
+                phone: shippingAddress.phone,
+                addressLine1: shippingAddress.addressLine1,
+                addressLine2: shippingAddress.addressLine2 || undefined,
+                district: shippingAddress.district || undefined,
+                city: shippingAddress.city || undefined,
+                postalCode: shippingAddress.postalCode || undefined,
+                notes: shippingAddress.notes || undefined,
+              },
+              shippingMethod: preview.shippingMethod,
+              voucherCodes: parseVoucherCodes(voucherInput),
+              paymentMethod: "MANUAL_TRANSFER" as const,
+            };
+
       const order = await placeOrderRequest(
-        {
-          shippingAddress: {
-            recipientName: shippingAddress.recipientName,
-            phone: shippingAddress.phone,
-            addressLine1: shippingAddress.addressLine1,
-            addressLine2: shippingAddress.addressLine2 || undefined,
-            district: shippingAddress.district || undefined,
-            city: shippingAddress.city || undefined,
-            postalCode: shippingAddress.postalCode || undefined,
-            notes: shippingAddress.notes || undefined,
-          },
-          shippingMethod: preview.shippingMethod,
-          voucherCodes: parseVoucherCodes(voucherInput),
-          paymentMethod: "MANUAL_TRANSFER",
-        },
+        orderPayload,
         crypto.randomUUID?.() ?? `order_${Date.now()}`,
       );
 
@@ -115,7 +209,20 @@ export function CheckoutPageClient() {
 
   useEffect(() => {
     void loadPreview([], "initial");
+    void loadSavedAddresses();
   }, []);
+
+  useEffect(() => {
+    if (selectedAddressMode !== "saved" || !selectedAddressId) {
+      return;
+    }
+
+    const selectedAddress = savedAddresses.find((address) => address.id === selectedAddressId);
+
+    if (selectedAddress) {
+      setShippingAddress(syncInlineAddress(selectedAddress));
+    }
+  }, [savedAddresses, selectedAddressId, selectedAddressMode]);
 
   if (isLoading) {
     return (
@@ -190,119 +297,228 @@ export function CheckoutPageClient() {
         </section>
 
         <section className="rounded-[1.5rem] border border-border bg-surface p-5">
-          <h2 className="text-lg font-semibold">Shipping Address</h2>
-          <p className="mt-3 text-sm leading-7 text-muted">
-            Inline shipping snapshot sekarang dipakai saat place order. Saved address support sudah
-            ada di service dan akan dihubungkan penuh pada batch addresses.
-          </p>
-
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="text-sm font-medium">
-              Recipient Name
-              <input
-                value={shippingAddress.recipientName}
-                onChange={(event) =>
-                  setShippingAddress((current) => ({
-                    ...current,
-                    recipientName: event.target.value,
-                  }))
-                }
-                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
-              />
-            </label>
-            <label className="text-sm font-medium">
-              Phone
-              <input
-                value={shippingAddress.phone}
-                onChange={(event) =>
-                  setShippingAddress((current) => ({
-                    ...current,
-                    phone: event.target.value,
-                  }))
-                }
-                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
-              />
-            </label>
-            <label className="text-sm font-medium md:col-span-2">
-              Address Line 1
-              <input
-                value={shippingAddress.addressLine1}
-                onChange={(event) =>
-                  setShippingAddress((current) => ({
-                    ...current,
-                    addressLine1: event.target.value,
-                  }))
-                }
-                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
-              />
-            </label>
-            <label className="text-sm font-medium md:col-span-2">
-              Address Line 2
-              <input
-                value={shippingAddress.addressLine2}
-                onChange={(event) =>
-                  setShippingAddress((current) => ({
-                    ...current,
-                    addressLine2: event.target.value,
-                  }))
-                }
-                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
-              />
-            </label>
-            <label className="text-sm font-medium">
-              District
-              <input
-                value={shippingAddress.district}
-                onChange={(event) =>
-                  setShippingAddress((current) => ({
-                    ...current,
-                    district: event.target.value,
-                  }))
-                }
-                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
-              />
-            </label>
-            <label className="text-sm font-medium">
-              City
-              <input
-                value={shippingAddress.city}
-                onChange={(event) =>
-                  setShippingAddress((current) => ({
-                    ...current,
-                    city: event.target.value,
-                  }))
-                }
-                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
-              />
-            </label>
-            <label className="text-sm font-medium">
-              Postal Code
-              <input
-                value={shippingAddress.postalCode}
-                onChange={(event) =>
-                  setShippingAddress((current) => ({
-                    ...current,
-                    postalCode: event.target.value,
-                  }))
-                }
-                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
-              />
-            </label>
-            <label className="text-sm font-medium md:col-span-2">
-              Note
-              <textarea
-                rows={3}
-                value={shippingAddress.notes}
-                onChange={(event) =>
-                  setShippingAddress((current) => ({
-                    ...current,
-                    notes: event.target.value,
-                  }))
-                }
-                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
-              />
-            </label>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold">Shipping Address</h2>
+              <p className="mt-3 text-sm leading-7 text-muted">
+                Checkout sekarang bisa memakai saved address customer atau inline snapshot baru.
+                Saved address default akan dipilih lebih dulu kalau ada.
+              </p>
+            </div>
+            <Link
+              href="/addresses"
+              className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted transition hover:text-foreground"
+            >
+              Manage Addresses
+            </Link>
           </div>
+
+          {addressBookMessage ? (
+            <p className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              {addressBookMessage}
+            </p>
+          ) : null}
+
+          {isLoadingAddresses ? (
+            <div className="mt-4 space-y-3">
+              {Array.from({ length: 2 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="h-28 animate-pulse rounded-[1.25rem] border border-border bg-background"
+                />
+              ))}
+            </div>
+          ) : (
+            <>
+              {savedAddresses.length ? (
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAddressMode("saved")}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                      selectedAddressMode === "saved"
+                        ? "bg-accent text-white"
+                        : "border border-border text-muted hover:text-foreground"
+                    }`}
+                  >
+                    Use Saved Address
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAddressMode("new")}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                      selectedAddressMode === "new"
+                        ? "bg-accent text-white"
+                        : "border border-border text-muted hover:text-foreground"
+                    }`}
+                  >
+                    Use New Address
+                  </button>
+                </div>
+              ) : null}
+
+              {savedAddresses.length && selectedAddressMode === "saved" ? (
+                <div className="mt-4 space-y-3">
+                  {savedAddresses.map((address) => (
+                    <label
+                      key={address.id}
+                      className={`flex cursor-pointer gap-4 rounded-[1.25rem] border px-4 py-4 transition ${
+                        selectedAddressId === address.id
+                          ? "border-accent bg-accent/5"
+                          : "border-border bg-background"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="saved-address"
+                        checked={selectedAddressId === address.id}
+                        onChange={() => {
+                          setSelectedAddressId(address.id);
+                          setSelectedAddressMode("saved");
+                        }}
+                        className="mt-1"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-medium">{address.recipientName}</p>
+                          {address.isDefault ? (
+                            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800">
+                              Default
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="mt-2 text-sm text-muted">{address.phone}</p>
+                        <p className="mt-2 text-sm leading-7 text-muted">
+                          {[
+                            address.addressLine1,
+                            address.addressLine2,
+                            address.district,
+                            address.city,
+                            address.postalCode,
+                          ]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </p>
+                        {address.notes ? (
+                          <p className="mt-2 text-sm text-muted">Note: {address.notes}</p>
+                        ) : null}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              ) : null}
+            </>
+          )}
+
+          {selectedAddressMode === "new" || !savedAddresses.length ? (
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <label className="text-sm font-medium">
+                Recipient Name
+                <input
+                  value={shippingAddress.recipientName}
+                  onChange={(event) =>
+                    setShippingAddress((current) => ({
+                      ...current,
+                      recipientName: event.target.value,
+                    }))
+                  }
+                  className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+                />
+              </label>
+              <label className="text-sm font-medium">
+                Phone
+                <input
+                  value={shippingAddress.phone}
+                  onChange={(event) =>
+                    setShippingAddress((current) => ({
+                      ...current,
+                      phone: event.target.value,
+                    }))
+                  }
+                  className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+                />
+              </label>
+              <label className="text-sm font-medium md:col-span-2">
+                Address Line 1
+                <input
+                  value={shippingAddress.addressLine1}
+                  onChange={(event) =>
+                    setShippingAddress((current) => ({
+                      ...current,
+                      addressLine1: event.target.value,
+                    }))
+                  }
+                  className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+                />
+              </label>
+              <label className="text-sm font-medium md:col-span-2">
+                Address Line 2
+                <input
+                  value={shippingAddress.addressLine2}
+                  onChange={(event) =>
+                    setShippingAddress((current) => ({
+                      ...current,
+                      addressLine2: event.target.value,
+                    }))
+                  }
+                  className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+                />
+              </label>
+              <label className="text-sm font-medium">
+                District
+                <input
+                  value={shippingAddress.district}
+                  onChange={(event) =>
+                    setShippingAddress((current) => ({
+                      ...current,
+                      district: event.target.value,
+                    }))
+                  }
+                  className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+                />
+              </label>
+              <label className="text-sm font-medium">
+                City
+                <input
+                  value={shippingAddress.city}
+                  onChange={(event) =>
+                    setShippingAddress((current) => ({
+                      ...current,
+                      city: event.target.value,
+                    }))
+                  }
+                  className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+                />
+              </label>
+              <label className="text-sm font-medium">
+                Postal Code
+                <input
+                  value={shippingAddress.postalCode}
+                  onChange={(event) =>
+                    setShippingAddress((current) => ({
+                      ...current,
+                      postalCode: event.target.value,
+                    }))
+                  }
+                  className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+                />
+              </label>
+              <label className="text-sm font-medium md:col-span-2">
+                Note
+                <textarea
+                  rows={3}
+                  value={shippingAddress.notes}
+                  onChange={(event) =>
+                    setShippingAddress((current) => ({
+                      ...current,
+                      notes: event.target.value,
+                    }))
+                  }
+                  className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+                />
+              </label>
+            </div>
+          ) : null}
         </section>
 
         <section className="rounded-[1.5rem] border border-border bg-surface p-5">

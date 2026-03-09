@@ -3,6 +3,7 @@ export const storefrontNav = [
   { href: "/products", label: "Products" },
   { href: "/cart", label: "Cart" },
   { href: "/checkout", label: "Checkout" },
+  { href: "/addresses", label: "Addresses" },
   { href: "/orders", label: "Orders" },
 ];
 

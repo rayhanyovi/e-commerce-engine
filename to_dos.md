@@ -198,7 +198,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Port update address.
 - [x] Port delete address.
 - [x] Pertahankan logic default address.
-- [ ] Tambahkan address selection di checkout yang konsisten dengan saved/new flow.
+- [x] Tambahkan address selection di checkout yang konsisten dengan saved/new flow.
 
 ## 16. Store Config and Settings
 
@@ -226,7 +226,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Migrasikan cart page.
 - [x] Migrasikan checkout page.
 - [x] Migrasikan orders page.
-- [ ] Migrasikan addresses page.
+- [x] Migrasikan addresses page.
 - [x] Migrasikan login page.
 - [x] Migrasikan register page.
 - [ ] Putuskan apakah `/categories` akan dibuat atau link-nya dihapus.
