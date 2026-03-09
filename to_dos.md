@@ -67,7 +67,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] `catalog`
 - [x] `cart`
 - [x] `checkout`
-- [ ] `orders`
+- [x] `orders`
 - [ ] `payments`
 - [ ] `promotions`
 - [x] `inventory`
@@ -126,32 +126,32 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 ## 10. Checkout Domain
 
 - [x] Port checkout preview.
-- [ ] Samakan formula preview dengan formula final place order.
+- [x] Samakan formula preview dengan formula final place order.
 - [x] Gunakan `StoreConfig` untuk shipping cost, ETA, free shipping threshold, max vouchers, stacking rules.
-- [ ] Implement voucher validation yang sama antara preview dan order finalization.
-- [ ] Pastikan shipping address bisa berasal dari saved address atau inline form.
-- [ ] Implement idempotency key handling di Next server layer.
+- [x] Implement voucher validation yang sama antara preview dan order finalization.
+- [x] Pastikan shipping address bisa berasal dari saved address atau inline form.
+- [x] Implement idempotency key handling di Next server layer.
 - [ ] Putuskan apakah checkout harus login atau boleh guest.
 - [ ] Pastikan `ALLOW_GUEST_CHECKOUT` benar-benar dipakai atau dihapus.
 
 ## 11. Orders Domain
 
-- [ ] Port place order.
-- [ ] Port my orders list.
-- [ ] Port my order detail.
-- [ ] Port admin order list.
-- [ ] Port admin order detail.
-- [ ] Port admin update order status.
-- [ ] Pastikan order menyimpan:
-- [ ] `productDiscountTotal`
-- [ ] `voucherDiscountTotal`
-- [ ] `shippingMethod`
-- [ ] `shippingEtaDays`
-- [ ] `customerSnapshot`
-- [ ] `addressSnapshot`
-- [ ] Perbaiki `variantLabelSnapshot` agar memakai label variant yang benar, bukan fallback ID sembarang.
-- [ ] Pastikan stock reservation dibuat saat order diletakkan.
-- [ ] Pastikan reservation release/consume konsisten terhadap perubahan status.
+- [x] Port place order.
+- [x] Port my orders list.
+- [x] Port my order detail.
+- [x] Port admin order list.
+- [x] Port admin order detail.
+- [x] Port admin update order status.
+- [x] Pastikan order menyimpan:
+- [x] `productDiscountTotal`
+- [x] `voucherDiscountTotal`
+- [x] `shippingMethod`
+- [x] `shippingEtaDays`
+- [x] `customerSnapshot`
+- [x] `addressSnapshot`
+- [x] Perbaiki `variantLabelSnapshot` agar memakai label variant yang benar, bukan fallback ID sembarang.
+- [x] Pastikan stock reservation dibuat saat order diletakkan.
+- [x] Pastikan reservation release/consume konsisten terhadap perubahan status.
 
 ## 12. Payments Domain
 
@@ -187,7 +187,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Port manual stock adjustment.
 - [x] Port stock movement list.
 - [x] Port low stock list.
-- [ ] Pastikan stock movement tercatat juga untuk reserve, consume, dan release order.
+- [x] Pastikan stock movement tercatat juga untuk reserve, consume, dan release order.
 - [x] Tambahkan guard supaya stock tidak pernah negatif.
 - [ ] Tambahkan referensi `actorId` dan `referenceId` secara konsisten.
 
@@ -320,7 +320,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 ## 26. Specific Known Fixes to Carry Into Migration
 
 - [ ] Daftarkan dan selesaikan wiring auth middleware/session context.
-- [ ] Selesaikan mismatch preview total vs final order total.
+- [x] Selesaikan mismatch preview total vs final order total.
 - [ ] Selesaikan mismatch payment status vs order status.
 - [ ] Selesaikan product variant persistence bug.
 - [ ] Selesaikan admin products page yang masih placeholder.

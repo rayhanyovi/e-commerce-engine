@@ -22,6 +22,8 @@ import {
   getStoreConfigSnapshot,
 } from "@/server/store-config";
 
+type DbClient = Prisma.TransactionClient | typeof prisma;
+
 const checkoutCartInclude = {
   items: {
     orderBy: {
@@ -66,6 +68,19 @@ const checkoutCartInclude = {
 type CheckoutCart = Prisma.CartGetPayload<{
   include: typeof checkoutCartInclude;
 }>;
+
+interface AppliedCheckoutPromotionRecord {
+  promotionId: string;
+  code: string;
+  discount: number;
+  type: CheckoutPreviewResult["appliedVouchers"][number]["type"];
+}
+
+export interface CheckoutQuote {
+  cart: CheckoutCart;
+  preview: CheckoutPreviewResult;
+  appliedPromotionRecords: AppliedCheckoutPromotionRecord[];
+}
 
 function getCartWhere(identity: CartIdentity): Prisma.CartWhereInput {
   if (identity.userId) {
@@ -149,8 +164,8 @@ function isPromotionApplicableToCart(
   });
 }
 
-async function loadActiveCart(identity: CartIdentity) {
-  const cart = await prisma.cart.findFirst({
+async function loadActiveCart(identity: CartIdentity, db: DbClient = prisma) {
+  const cart = await db.cart.findFirst({
     where: {
       ...getCartWhere(identity),
       status: "ACTIVE",
@@ -188,6 +203,7 @@ async function validateVoucherCodes(
   productDiscountTotal: number,
   userId: string | undefined,
   dto: CheckoutPreviewDto,
+  db: DbClient = prisma,
 ) {
   const normalizedCodes = Array.from(
     new Set(dto.voucherCodes.map((code) => code.trim()).filter(Boolean)),
@@ -196,17 +212,21 @@ async function validateVoucherCodes(
   if (!normalizedCodes.length) {
     return {
       appliedVouchers: [],
+      appliedPromotionRecords: [],
       rejectedVouchers: [],
       voucherDiscountTotal: 0,
       hasFreeShippingVoucher: false,
     };
   }
 
-  const configSnapshot = await getStoreConfigSnapshot([
-    StoreConfigKeys.MAX_VOUCHERS_PER_ORDER,
-    StoreConfigKeys.ALLOW_VOUCHER_STACKING,
-    StoreConfigKeys.ALLOW_VOUCHER_WITH_PRODUCT_DISCOUNT,
-  ]);
+  const configSnapshot = await getStoreConfigSnapshot(
+    [
+      StoreConfigKeys.MAX_VOUCHERS_PER_ORDER,
+      StoreConfigKeys.ALLOW_VOUCHER_STACKING,
+      StoreConfigKeys.ALLOW_VOUCHER_WITH_PRODUCT_DISCOUNT,
+    ],
+    db,
+  );
   const maxVouchersPerOrder = getStoreConfigNumberValue(
     configSnapshot,
     StoreConfigKeys.MAX_VOUCHERS_PER_ORDER,
@@ -227,7 +247,7 @@ async function validateVoucherCodes(
     allowVoucherStacking ? Math.max(1, maxVouchersPerOrder) : 1,
   );
   const ignoredCodes = normalizedCodes.slice(acceptedCodes.length);
-  const promotions = await prisma.promotion.findMany({
+  const promotions = await db.promotion.findMany({
     where: {
       code: {
         in: acceptedCodes,
@@ -254,6 +274,7 @@ async function validateVoucherCodes(
       : "Voucher stacking is disabled for this store",
   }));
   const appliedVouchers: CheckoutPreviewResult["appliedVouchers"] = [];
+  const appliedPromotionRecords: AppliedCheckoutPromotionRecord[] = [];
   let voucherDiscountTotal = 0;
   let hasFreeShippingVoucher = false;
 
@@ -325,29 +346,40 @@ async function validateVoucherCodes(
       discount,
       type: promotion.type,
     });
+    appliedPromotionRecords.push({
+      promotionId: promotion.id,
+      code,
+      discount,
+      type: promotion.type,
+    });
     voucherDiscountTotal += discount;
     hasFreeShippingVoucher = hasFreeShippingVoucher || promotion.type === "FREE_SHIPPING";
   }
 
   return {
     appliedVouchers,
+    appliedPromotionRecords,
     rejectedVouchers,
     voucherDiscountTotal,
     hasFreeShippingVoucher,
   };
 }
 
-export async function getCheckoutPreview(
+export async function buildCheckoutQuote(
   identity: CartIdentity,
   dto: CheckoutPreviewDto,
-): Promise<CheckoutPreviewResult> {
-  const cart = await loadActiveCart(identity);
-  const configSnapshot = await getStoreConfigSnapshot([
-    StoreConfigKeys.ALLOW_GUEST_CHECKOUT,
-    StoreConfigKeys.FREE_SHIPPING_THRESHOLD,
-    StoreConfigKeys.INTERNAL_FLAT_SHIPPING_COST,
-    StoreConfigKeys.INTERNAL_FLAT_SHIPPING_ETA_DAYS,
-  ]);
+  db: DbClient = prisma,
+): Promise<CheckoutQuote> {
+  const cart = await loadActiveCart(identity, db);
+  const configSnapshot = await getStoreConfigSnapshot(
+    [
+      StoreConfigKeys.ALLOW_GUEST_CHECKOUT,
+      StoreConfigKeys.FREE_SHIPPING_THRESHOLD,
+      StoreConfigKeys.INTERNAL_FLAT_SHIPPING_COST,
+      StoreConfigKeys.INTERNAL_FLAT_SHIPPING_ETA_DAYS,
+    ],
+    db,
+  );
   const items = cart.items.map((item) => {
     const unitPrice = getEffectivePrice(item.product, item.variant);
 
@@ -368,8 +400,20 @@ export async function getCheckoutPreview(
 
     return sum + lineDiscount * item.qty;
   }, 0);
-  const { appliedVouchers, rejectedVouchers, voucherDiscountTotal, hasFreeShippingVoucher } =
-    await validateVoucherCodes(cart, subtotal, productDiscountTotal, identity.userId, dto);
+  const {
+    appliedVouchers,
+    appliedPromotionRecords,
+    rejectedVouchers,
+    voucherDiscountTotal,
+    hasFreeShippingVoucher,
+  } = await validateVoucherCodes(
+    cart,
+    subtotal,
+    productDiscountTotal,
+    identity.userId,
+    dto,
+    db,
+  );
   const shippingEtaDays = getStoreConfigNumberValue(
     configSnapshot,
     StoreConfigKeys.INTERNAL_FLAT_SHIPPING_ETA_DAYS,
@@ -393,7 +437,7 @@ export async function getCheckoutPreview(
     shippingEtaDays,
   );
 
-  return {
+  const preview: CheckoutPreviewResult = {
     items,
     subtotal,
     productDiscountTotal,
@@ -410,4 +454,20 @@ export async function getCheckoutPreview(
       false,
     ),
   };
+
+  return {
+    cart,
+    preview,
+    appliedPromotionRecords,
+  };
+}
+
+export async function getCheckoutPreview(
+  identity: CartIdentity,
+  dto: CheckoutPreviewDto,
+  db: DbClient = prisma,
+): Promise<CheckoutPreviewResult> {
+  const quote = await buildCheckoutQuote(identity, dto, db);
+
+  return quote.preview;
 }

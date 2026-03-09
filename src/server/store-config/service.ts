@@ -1,7 +1,12 @@
 import { prisma } from "@/server/db";
 
-export async function getStoreConfigSnapshot(keys: string[]) {
-  const configs = await prisma.storeConfig.findMany({
+type StoreConfigReader = Pick<typeof prisma, "storeConfig">;
+
+export async function getStoreConfigSnapshot(
+  keys: string[],
+  db: StoreConfigReader = prisma,
+) {
+  const configs = await db.storeConfig.findMany({
     where: {
       key: {
         in: keys,

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { AddressInputSchema } from "./address.dto";
+import { PaginationQuerySchema } from "../envelopes";
 
 export const OrderStatusSchema = z.enum([
   "PENDING_PAYMENT",
@@ -70,6 +71,13 @@ export type CheckoutPreviewItem = z.infer<typeof CheckoutPreviewItemSchema>;
 export type CheckoutPreviewVoucher = z.infer<typeof CheckoutPreviewVoucherSchema>;
 export type CheckoutPreviewRejectedVoucher = z.infer<typeof CheckoutPreviewRejectedVoucherSchema>;
 export type CheckoutPreviewResult = z.infer<typeof CheckoutPreviewResultSchema>;
+
+export const OrderListQuerySchema = PaginationQuerySchema.extend({
+  status: OrderStatusSchema.optional(),
+  search: z.string().optional(),
+});
+
+export type OrderListQuery = z.infer<typeof OrderListQuerySchema>;
 
 export const UpdateOrderStatusSchema = z.object({
   status: OrderStatusSchema,

@@ -6,4 +6,6 @@ export * from "@/server/db";
 export * from "@/server/domain";
 export * from "@/server/http";
 export * from "@/server/inventory";
+export * from "@/server/orders";
+export * from "@/server/store-config";
 export * from "@/shared/contracts";
