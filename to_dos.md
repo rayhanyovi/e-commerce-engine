@@ -69,7 +69,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] `checkout`
 - [x] `orders`
 - [x] `payments`
-- [ ] `promotions`
+- [x] `promotions`
 - [x] `inventory`
 - [ ] `settings`
 - [ ] `audit`
@@ -170,17 +170,17 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 13. Promotions Domain
 
-- [ ] Port promotion list admin.
-- [ ] Port create promotion.
-- [ ] Port update promotion.
-- [ ] Port delete promotion.
-- [ ] Port voucher validation.
-- [ ] Perbaiki update promotion agar `scopes` ikut tersinkron.
-- [ ] Implement `PromotionUsage` creation saat order sukses.
-- [ ] Increment `Promotion.totalUsed` saat voucher benar-benar dipakai.
-- [ ] Pastikan per-user limit dan total usage limit benar-benar enforceable.
+- [x] Port promotion list admin.
+- [x] Port create promotion.
+- [x] Port update promotion.
+- [x] Port delete promotion.
+- [x] Port voucher validation.
+- [x] Perbaiki update promotion agar `scopes` ikut tersinkron.
+- [x] Implement `PromotionUsage` creation saat order sukses.
+- [x] Increment `Promotion.totalUsed` saat voucher benar-benar dipakai.
+- [x] Pastikan per-user limit dan total usage limit benar-benar enforceable.
 - [ ] Putuskan support `FREE_PRODUCT`; saat ini logic diskonnya belum benar-benar ada.
-- [ ] Pastikan stacking rule dan `MAX_VOUCHERS_PER_ORDER` dijalankan konsisten.
+- [x] Pastikan stacking rule dan `MAX_VOUCHERS_PER_ORDER` dijalankan konsisten.
 
 ## 14. Inventory Domain
 

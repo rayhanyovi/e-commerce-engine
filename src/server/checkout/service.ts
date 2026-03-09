@@ -2,20 +2,18 @@ import { Prisma } from "@prisma/client";
 
 import {
   type CheckoutPreviewDto,
-  type CheckoutPreviewRejectedVoucher,
   type CheckoutPreviewResult,
   StoreConfigKeys,
   ErrorCodes,
 } from "@/shared/contracts";
 import {
-  calculateDiscount,
   calculateShipping,
   getEffectivePrice,
-  isPromotionEligible,
 } from "@/server/domain";
 import { prisma } from "@/server/db";
 import { AppError } from "@/server/http";
 import type { CartIdentity } from "@/server/cart";
+import { validateVoucherSelection } from "@/server/promotions";
 import {
   getStoreConfigBooleanValue,
   getStoreConfigNumberValue,
@@ -69,17 +67,12 @@ type CheckoutCart = Prisma.CartGetPayload<{
   include: typeof checkoutCartInclude;
 }>;
 
-interface AppliedCheckoutPromotionRecord {
-  promotionId: string;
-  code: string;
-  discount: number;
-  type: CheckoutPreviewResult["appliedVouchers"][number]["type"];
-}
-
 export interface CheckoutQuote {
   cart: CheckoutCart;
   preview: CheckoutPreviewResult;
-  appliedPromotionRecords: AppliedCheckoutPromotionRecord[];
+  appliedPromotionRecords: Awaited<
+    ReturnType<typeof validateVoucherSelection>
+  >["appliedPromotionRecords"];
 }
 
 function getCartWhere(identity: CartIdentity): Prisma.CartWhereInput {
@@ -131,39 +124,6 @@ function getAvailableQty(
   return Math.max(0, stockOnHand - activeReservations);
 }
 
-function isPromotionApplicableToCart(
-  promotion: {
-    scopes: Array<{
-      scopeType: "ALL_PRODUCTS" | "CATEGORY" | "PRODUCT" | "VARIANT";
-      targetId: string | null;
-    }>;
-  },
-  cart: CheckoutCart,
-) {
-  if (!promotion.scopes.length) {
-    return true;
-  }
-
-  return promotion.scopes.some((scope) => {
-    switch (scope.scopeType) {
-      case "ALL_PRODUCTS":
-        return true;
-
-      case "CATEGORY":
-        return cart.items.some((item) => item.product.categoryId === scope.targetId);
-
-      case "PRODUCT":
-        return cart.items.some((item) => item.productId === scope.targetId);
-
-      case "VARIANT":
-        return cart.items.some((item) => item.productVariantId === scope.targetId);
-
-      default:
-        return false;
-    }
-  });
-}
-
 async function loadActiveCart(identity: CartIdentity, db: DbClient = prisma) {
   const cart = await db.cart.findFirst({
     where: {
@@ -195,174 +155,6 @@ async function loadActiveCart(identity: CartIdentity, db: DbClient = prisma) {
   }
 
   return cart;
-}
-
-async function validateVoucherCodes(
-  cart: CheckoutCart,
-  subtotal: number,
-  productDiscountTotal: number,
-  userId: string | undefined,
-  dto: CheckoutPreviewDto,
-  db: DbClient = prisma,
-) {
-  const normalizedCodes = Array.from(
-    new Set(dto.voucherCodes.map((code) => code.trim()).filter(Boolean)),
-  );
-
-  if (!normalizedCodes.length) {
-    return {
-      appliedVouchers: [],
-      appliedPromotionRecords: [],
-      rejectedVouchers: [],
-      voucherDiscountTotal: 0,
-      hasFreeShippingVoucher: false,
-    };
-  }
-
-  const configSnapshot = await getStoreConfigSnapshot(
-    [
-      StoreConfigKeys.MAX_VOUCHERS_PER_ORDER,
-      StoreConfigKeys.ALLOW_VOUCHER_STACKING,
-      StoreConfigKeys.ALLOW_VOUCHER_WITH_PRODUCT_DISCOUNT,
-    ],
-    db,
-  );
-  const maxVouchersPerOrder = getStoreConfigNumberValue(
-    configSnapshot,
-    StoreConfigKeys.MAX_VOUCHERS_PER_ORDER,
-    1,
-  );
-  const allowVoucherStacking = getStoreConfigBooleanValue(
-    configSnapshot,
-    StoreConfigKeys.ALLOW_VOUCHER_STACKING,
-    false,
-  );
-  const allowVoucherWithProductDiscount = getStoreConfigBooleanValue(
-    configSnapshot,
-    StoreConfigKeys.ALLOW_VOUCHER_WITH_PRODUCT_DISCOUNT,
-    true,
-  );
-  const acceptedCodes = normalizedCodes.slice(
-    0,
-    allowVoucherStacking ? Math.max(1, maxVouchersPerOrder) : 1,
-  );
-  const ignoredCodes = normalizedCodes.slice(acceptedCodes.length);
-  const promotions = await db.promotion.findMany({
-    where: {
-      code: {
-        in: acceptedCodes,
-      },
-    },
-    include: {
-      scopes: true,
-      usages: {
-        select: {
-          userId: true,
-        },
-      },
-    },
-  });
-  const promotionMap = new Map(
-    promotions
-      .filter((promotion) => promotion.code)
-      .map((promotion) => [promotion.code as string, promotion]),
-  );
-  const rejectedVouchers: CheckoutPreviewRejectedVoucher[] = ignoredCodes.map((code) => ({
-    code,
-    reason: allowVoucherStacking
-      ? "Maximum voucher limit reached for one order"
-      : "Voucher stacking is disabled for this store",
-  }));
-  const appliedVouchers: CheckoutPreviewResult["appliedVouchers"] = [];
-  const appliedPromotionRecords: AppliedCheckoutPromotionRecord[] = [];
-  let voucherDiscountTotal = 0;
-  let hasFreeShippingVoucher = false;
-
-  for (const code of acceptedCodes) {
-    const promotion = promotionMap.get(code);
-
-    if (!promotion) {
-      rejectedVouchers.push({
-        code,
-        reason: "Voucher not found",
-      });
-      continue;
-    }
-
-    const userUsageCount = userId
-      ? promotion.usages.filter((usage) => usage.userId === userId).length
-      : 0;
-    const eligibility = isPromotionEligible(
-      {
-        ...promotion,
-        scopes: promotion.scopes,
-      },
-      new Date(),
-      userUsageCount,
-    );
-
-    if (!eligibility.eligible) {
-      rejectedVouchers.push({
-        code,
-        reason: eligibility.reason ?? "Voucher is not eligible",
-      });
-      continue;
-    }
-
-    if (!isPromotionApplicableToCart(promotion, cart)) {
-      rejectedVouchers.push({
-        code,
-        reason: "Voucher does not match the current cart scope",
-      });
-      continue;
-    }
-
-    if (promotion.minPurchase != null && subtotal < promotion.minPurchase) {
-      rejectedVouchers.push({
-        code,
-        reason: `Minimum purchase is ${promotion.minPurchase}`,
-      });
-      continue;
-    }
-
-    if (!allowVoucherWithProductDiscount && productDiscountTotal > 0) {
-      rejectedVouchers.push({
-        code,
-        reason: "Voucher cannot be combined with product discount",
-      });
-      continue;
-    }
-
-    const discount = calculateDiscount(
-      {
-        ...promotion,
-        scopes: promotion.scopes,
-      },
-      subtotal,
-    );
-
-    appliedVouchers.push({
-      code,
-      discount,
-      type: promotion.type,
-    });
-    appliedPromotionRecords.push({
-      promotionId: promotion.id,
-      code,
-      discount,
-      type: promotion.type,
-    });
-    voucherDiscountTotal += discount;
-    hasFreeShippingVoucher = hasFreeShippingVoucher || promotion.type === "FREE_SHIPPING";
-  }
-
-  return {
-    appliedVouchers,
-    appliedPromotionRecords,
-    rejectedVouchers,
-    voucherDiscountTotal,
-    hasFreeShippingVoucher,
-  };
 }
 
 export async function buildCheckoutQuote(
@@ -406,12 +198,18 @@ export async function buildCheckoutQuote(
     rejectedVouchers,
     voucherDiscountTotal,
     hasFreeShippingVoucher,
-  } = await validateVoucherCodes(
-    cart,
-    subtotal,
-    productDiscountTotal,
-    identity.userId,
-    dto,
+  } = await validateVoucherSelection(
+    {
+      codes: dto.voucherCodes,
+      subtotal,
+      productDiscountTotal,
+      userId: identity.userId,
+      items: cart.items.map((item) => ({
+        productId: item.productId,
+        productVariantId: item.productVariantId,
+        categoryId: item.product.categoryId,
+      })),
+    },
     db,
   );
   const shippingEtaDays = getStoreConfigNumberValue(
