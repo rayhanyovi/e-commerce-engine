@@ -205,8 +205,8 @@ describe("order stock lifecycle", () => {
       },
       appliedPromotionRecords: [],
     });
-    prismaMocks.prisma.$transaction.mockImplementation(async (callback: never) =>
-      callback(tx),
+    prismaMocks.prisma.$transaction.mockImplementation(
+      async (callback: (transactionClient: typeof tx) => Promise<unknown>) => callback(tx),
     );
     prismaMocks.prisma.order.findFirst.mockResolvedValue(createOrderDetail());
 
@@ -317,8 +317,8 @@ describe("order stock lifecycle", () => {
       },
     };
 
-    prismaMocks.prisma.$transaction.mockImplementation(async (callback: never) =>
-      callback(tx),
+    prismaMocks.prisma.$transaction.mockImplementation(
+      async (callback: (transactionClient: typeof tx) => Promise<unknown>) => callback(tx),
     );
     prismaMocks.prisma.order.findUnique.mockResolvedValue(
       createOrderDetail({

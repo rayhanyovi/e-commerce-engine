@@ -27,15 +27,24 @@ import { POST as logoutPost } from "../../app/api/auth/logout/route";
 import { POST as registerPost } from "../../app/api/auth/register/route";
 import { GET as meGet, PATCH as mePatch } from "../../app/api/me/route";
 
+type StrictRequestInit = Omit<RequestInit, "signal"> & {
+  signal?: AbortSignal;
+};
+
 function createJsonRequest(url: string, body: unknown, init?: RequestInit) {
+  const sanitizedInit: StrictRequestInit = {
+    ...init,
+    signal: init?.signal ?? undefined,
+  };
+
   return new NextRequest(url, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      ...(init?.headers ?? {}),
+      ...(sanitizedInit.headers ?? {}),
     },
     body: JSON.stringify(body),
-    ...init,
+    ...sanitizedInit,
   });
 }
 
