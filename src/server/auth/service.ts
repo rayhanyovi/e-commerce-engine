@@ -1,7 +1,12 @@
 import { Prisma } from "@prisma/client";
 import { NextRequest } from "next/server";
 
-import { ErrorCodes, type LoginDto, type RegisterDto } from "@/shared/contracts";
+import {
+  ErrorCodes,
+  type LoginDto,
+  type RegisterDto,
+  type UpdateProfileDto,
+} from "@/shared/contracts";
 import { prisma } from "@/server/db";
 import { AppError } from "@/server/http";
 
@@ -145,4 +150,26 @@ export async function requireAdminUser(request: NextRequest): Promise<AuthUser> 
   }
 
   return user;
+}
+
+export async function updateUserProfile(userId: string, dto: UpdateProfileDto) {
+  const existingUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true },
+  });
+
+  if (!existingUser) {
+    throw new AppError(404, ErrorCodes.NOT_FOUND, "User not found");
+  }
+
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      name: dto.name?.trim() || undefined,
+      phone: dto.phone === undefined ? undefined : dto.phone.trim() || null,
+    },
+    select: authUserSelect,
+  });
+
+  return mapAuthUser(user);
 }
