@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { successResponse } from "@/shared/contracts";
+import { OrderRouteParamsSchema, successResponse } from "@/shared/contracts";
 import { requireUser } from "@/server/auth";
 import { getMyOrderById } from "@/server/orders";
 import { toErrorResponse } from "@/server/http";
@@ -15,7 +15,7 @@ export async function GET(
 ) {
   try {
     const user = await requireUser(request);
-    const { orderId } = await context.params;
+    const { orderId } = OrderRouteParamsSchema.parse(await context.params);
     const order = await getMyOrderById(orderId, user.id);
 
     return NextResponse.json(successResponse(order));

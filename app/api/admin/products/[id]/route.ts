@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { UpdateProductSchema, successResponse } from "@/shared/contracts";
+import {
+  EntityIdRouteParamsSchema,
+  UpdateProductSchema,
+  successResponse,
+} from "@/shared/contracts";
 import { requireAdminUser } from "@/server/auth";
 import { deleteProduct, getAdminProductById, updateProduct } from "@/server/catalog";
 import { toErrorResponse } from "@/server/http";
@@ -13,7 +17,7 @@ export async function GET(
 ) {
   try {
     await requireAdminUser(request);
-    const { id } = await context.params;
+    const { id } = EntityIdRouteParamsSchema.parse(await context.params);
     const product = await getAdminProductById(id);
 
     return NextResponse.json(successResponse(product));
@@ -28,7 +32,7 @@ export async function PATCH(
 ) {
   try {
     await requireAdminUser(request);
-    const { id } = await context.params;
+    const { id } = EntityIdRouteParamsSchema.parse(await context.params);
     const payload = UpdateProductSchema.parse(await request.json());
     const product = await updateProduct(id, payload);
 
@@ -44,7 +48,7 @@ export async function DELETE(
 ) {
   try {
     await requireAdminUser(request);
-    const { id } = await context.params;
+    const { id } = EntityIdRouteParamsSchema.parse(await context.params);
     const result = await deleteProduct(id);
 
     return NextResponse.json(successResponse(result));

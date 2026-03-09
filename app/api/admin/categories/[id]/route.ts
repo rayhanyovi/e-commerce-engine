@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import {
+  EntityIdRouteParamsSchema,
   UpdateCategorySchema,
   successResponse,
 } from "@/shared/contracts";
@@ -19,7 +20,7 @@ export async function PATCH(
 ) {
   try {
     await requireAdminUser(request);
-    const { id } = await context.params;
+    const { id } = EntityIdRouteParamsSchema.parse(await context.params);
     const payload = UpdateCategorySchema.parse(await request.json());
     const category = await updateCategory(id, payload);
 
@@ -35,7 +36,7 @@ export async function DELETE(
 ) {
   try {
     await requireAdminUser(request);
-    const { id } = await context.params;
+    const { id } = EntityIdRouteParamsSchema.parse(await context.params);
     const result = await deleteCategory(id);
 
     return NextResponse.json(successResponse(result));

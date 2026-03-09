@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { UpdateCartItemSchema, successResponse } from "@/shared/contracts";
+import {
+  CartItemRouteParamsSchema,
+  UpdateCartItemSchema,
+  successResponse,
+} from "@/shared/contracts";
 import {
   applyCartSessionCookie,
   removeCartItem,
@@ -20,7 +24,7 @@ export async function PATCH(
 ) {
   try {
     const payload = UpdateCartItemSchema.parse(await request.json());
-    const { itemId } = await context.params;
+    const { itemId } = CartItemRouteParamsSchema.parse(await context.params);
     const session = await resolveCartSession(request);
     const cart = await updateCartItem(requireCartIdentity(session), itemId, payload);
     const response = NextResponse.json(successResponse(cart));
@@ -38,7 +42,7 @@ export async function DELETE(
   },
 ) {
   try {
-    const { itemId } = await context.params;
+    const { itemId } = CartItemRouteParamsSchema.parse(await context.params);
     const session = await resolveCartSession(request);
     const cart = await removeCartItem(requireCartIdentity(session), itemId);
     const response = NextResponse.json(successResponse(cart));

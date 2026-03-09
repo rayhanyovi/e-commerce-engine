@@ -56,7 +56,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Pindahkan seluruh Zod schemas dari `packages/contracts` ke shared layer yang benar-benar dipakai app Next.
 - [x] Pertahankan envelope response bila route handlers masih exposed ke client.
 - [ ] Audit ulang schema yang belum terpakai konsisten.
-- [ ] Tambahkan validation untuk endpoint yang saat ini belum memakai Zod pipe.
+- [x] Tambahkan validation untuk endpoint yang saat ini belum memakai Zod pipe.
 - [x] Pastikan type inference dari schema tetap menjadi source of truth.
 
 ## 6. Server Architecture in Next

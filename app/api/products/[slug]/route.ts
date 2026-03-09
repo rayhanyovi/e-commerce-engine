@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { successResponse } from "@/shared/contracts";
+import { ProductSlugRouteParamsSchema, successResponse } from "@/shared/contracts";
 import { getPublicProductBySlug } from "@/server/catalog";
 import { toErrorResponse } from "@/server/http";
 
@@ -11,7 +11,7 @@ export async function GET(
   context: { params: Promise<{ slug: string }> },
 ) {
   try {
-    const { slug } = await context.params;
+    const { slug } = ProductSlugRouteParamsSchema.parse(await context.params);
     const product = await getPublicProductBySlug(slug);
 
     return NextResponse.json(successResponse(product));

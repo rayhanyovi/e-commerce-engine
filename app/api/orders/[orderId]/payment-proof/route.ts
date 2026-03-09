@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { UploadPaymentProofSchema, successResponse } from "@/shared/contracts";
+import {
+  OrderRouteParamsSchema,
+  UploadPaymentProofSchema,
+  successResponse,
+} from "@/shared/contracts";
 import { requireUser } from "@/server/auth";
 import { toErrorResponse } from "@/server/http";
 import { uploadPaymentProof } from "@/server/payments";
@@ -16,7 +20,7 @@ export async function POST(
   try {
     const user = await requireUser(request);
     const payload = UploadPaymentProofSchema.parse(await request.json());
-    const { orderId } = await context.params;
+    const { orderId } = OrderRouteParamsSchema.parse(await context.params);
     const result = await uploadPaymentProof(orderId, payload, user);
 
     return NextResponse.json(successResponse(result));

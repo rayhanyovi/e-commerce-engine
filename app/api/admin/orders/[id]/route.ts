@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { successResponse } from "@/shared/contracts";
+import { EntityIdRouteParamsSchema, successResponse } from "@/shared/contracts";
 import { requireAdminUser } from "@/server/auth";
 import { getAdminOrderById } from "@/server/orders";
 import { toErrorResponse } from "@/server/http";
@@ -15,7 +15,7 @@ export async function GET(
 ) {
   try {
     await requireAdminUser(request);
-    const { id } = await context.params;
+    const { id } = EntityIdRouteParamsSchema.parse(await context.params);
     const order = await getAdminOrderById(id);
 
     return NextResponse.json(successResponse(order));
