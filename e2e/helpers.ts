@@ -1,5 +1,14 @@
 import { expect, type Page } from "@playwright/test";
 
+export const E2E_SEED_PRODUCT = {
+  slug: "e2e-checkout-coffee",
+  name: "E2E Checkout Coffee",
+  categorySlug: "beverages",
+  searchTerm: "e2e",
+  featuredVariantLabel: "Size: 1kg",
+  featuredVariantSku: "E2E-COFFEE-1KG",
+} as const;
+
 export interface CustomerCredentials {
   email: string;
   password: string;
@@ -40,9 +49,9 @@ export async function logout(page: Page) {
 }
 
 export async function addSeedProductToCart(page: Page) {
-  await page.goto("/products/artisan-coffee-beans");
+  await page.goto(`/products/${E2E_SEED_PRODUCT.slug}`);
   await expect(
-    page.getByRole("heading", { name: "Artisan Coffee Beans" }),
+    page.getByRole("heading", { name: E2E_SEED_PRODUCT.name }),
   ).toBeVisible();
 
   const variantSelect = page.getByLabel("Variant");
@@ -54,9 +63,9 @@ export async function addSeedProductToCart(page: Page) {
     await page.getByRole("button", { name: "Add to Cart" }).click();
 
     try {
-      await expect(page.getByText("Artisan Coffee Beans added to cart")).toBeVisible({
-        timeout: 2_500,
-      });
+      await expect(
+        page.getByText(`${E2E_SEED_PRODUCT.name} added to cart`),
+      ).toBeVisible({ timeout: 2_500 });
       added = true;
       break;
     } catch {

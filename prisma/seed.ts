@@ -1,7 +1,11 @@
 import { hash } from "bcryptjs";
+import { config as loadEnv } from "dotenv";
 import { PrismaClient, UserRole } from "@prisma/client";
 
 import { getDefaultStoreConfigSeedData } from "../src/server/store-config";
+
+loadEnv({ path: ".env.local", quiet: true });
+loadEnv({ path: ".env", quiet: true });
 
 const prisma = new PrismaClient();
 
@@ -156,6 +160,87 @@ async function syncVariantOptionCombination(variantId: string, optionValueId: st
   });
 }
 
+async function seedSizedCoffeeProduct(input: {
+  categoryId: string;
+  slug: string;
+  name: string;
+  description: string;
+  mediaUrl: string;
+  basePrice: number;
+  promoPrice: number;
+  variant250Sku: string;
+  variant250Stock: number;
+  variant1kgSku: string;
+  variant1kgPriceOverride: number;
+  variant1kgStock: number;
+}) {
+  const product = await prisma.product.upsert({
+    where: {
+      slug: input.slug,
+    },
+    update: {
+      categoryId: input.categoryId,
+      name: input.name,
+      description: input.description,
+      basePrice: input.basePrice,
+      promoPrice: input.promoPrice,
+      isActive: true,
+      mediaUrls: [input.mediaUrl],
+    },
+    create: {
+      categoryId: input.categoryId,
+      name: input.name,
+      slug: input.slug,
+      description: input.description,
+      basePrice: input.basePrice,
+      promoPrice: input.promoPrice,
+      isActive: true,
+      mediaUrls: [input.mediaUrl],
+    },
+  });
+  const sizeDefinition = await findOrCreateOptionDefinition(product.id, "Size", 0);
+  const size250g = await findOrCreateOptionValue(sizeDefinition.id, "250g");
+  const size1kg = await findOrCreateOptionValue(sizeDefinition.id, "1kg");
+  const variant250g = await prisma.productVariant.upsert({
+    where: {
+      sku: input.variant250Sku,
+    },
+    update: {
+      productId: product.id,
+      priceOverride: null,
+      stockOnHand: input.variant250Stock,
+      isActive: true,
+    },
+    create: {
+      productId: product.id,
+      sku: input.variant250Sku,
+      stockOnHand: input.variant250Stock,
+      isActive: true,
+    },
+  });
+  const variant1kg = await prisma.productVariant.upsert({
+    where: {
+      sku: input.variant1kgSku,
+    },
+    update: {
+      productId: product.id,
+      priceOverride: input.variant1kgPriceOverride,
+      stockOnHand: input.variant1kgStock,
+      isActive: true,
+    },
+    create: {
+      productId: product.id,
+      sku: input.variant1kgSku,
+      priceOverride: input.variant1kgPriceOverride,
+      stockOnHand: input.variant1kgStock,
+      isActive: true,
+    },
+  });
+
+  await syncVariantOptionCombination(variant250g.id, size250g.id);
+  await syncVariantOptionCombination(variant1kg.id, size1kg.id);
+}
+
 async function seedCatalog() {
   const beverages = await prisma.category.upsert({
     where: { slug: "beverages" },
@@ -175,75 +260,34 @@ async function seedCatalog() {
     create: { name: "Home Goods", slug: "home-goods", isActive: true },
   });
 
-  const coffeeProduct = await prisma.product.upsert({
-    where: {
-      slug: "artisan-coffee-beans",
-    },
-    update: {
-      categoryId: beverages.id,
-      name: "Artisan Coffee Beans",
-      description: "Medium roast blend untuk baseline storefront dan checkout.",
-      basePrice: 135000,
-      promoPrice: 120000,
-      isActive: true,
-      mediaUrls: ["/images/mock/coffee-beans.jpg"],
-    },
-    create: {
-      categoryId: beverages.id,
-      name: "Artisan Coffee Beans",
-      slug: "artisan-coffee-beans",
-      description: "Medium roast blend untuk baseline storefront dan checkout.",
-      basePrice: 135000,
-      promoPrice: 120000,
-      isActive: true,
-      mediaUrls: ["/images/mock/coffee-beans.jpg"],
-    },
+  await seedSizedCoffeeProduct({
+    categoryId: beverages.id,
+    slug: "artisan-coffee-beans",
+    name: "Artisan Coffee Beans",
+    description: "Medium roast blend untuk baseline storefront dan checkout.",
+    mediaUrl: "/images/mock/coffee-beans.jpg",
+    basePrice: 135000,
+    promoPrice: 120000,
+    variant250Sku: "COFFEE-250G",
+    variant250Stock: 12,
+    variant1kgSku: "COFFEE-1KG",
+    variant1kgPriceOverride: 420000,
+    variant1kgStock: 5,
   });
-  const sizeDefinition = await findOrCreateOptionDefinition(
-    coffeeProduct.id,
-    "Size",
-    0,
-  );
-  const size250g = await findOrCreateOptionValue(sizeDefinition.id, "250g");
-  const size1kg = await findOrCreateOptionValue(sizeDefinition.id, "1kg");
-  const coffee250g = await prisma.productVariant.upsert({
-    where: {
-      sku: "COFFEE-250G",
-    },
-    update: {
-      productId: coffeeProduct.id,
-      priceOverride: null,
-      stockOnHand: 12,
-      isActive: true,
-    },
-    create: {
-      productId: coffeeProduct.id,
-      sku: "COFFEE-250G",
-      stockOnHand: 12,
-      isActive: true,
-    },
+  await seedSizedCoffeeProduct({
+    categoryId: beverages.id,
+    slug: "e2e-checkout-coffee",
+    name: "E2E Checkout Coffee",
+    description: "Dedicated fixture product for isolated storefront and admin E2E coverage.",
+    mediaUrl: "/images/mock/coffee-beans.jpg",
+    basePrice: 135000,
+    promoPrice: 120000,
+    variant250Sku: "E2E-COFFEE-250G",
+    variant250Stock: 12,
+    variant1kgSku: "E2E-COFFEE-1KG",
+    variant1kgPriceOverride: 420000,
+    variant1kgStock: 5,
   });
-  const coffee1kg = await prisma.productVariant.upsert({
-    where: {
-      sku: "COFFEE-1KG",
-    },
-    update: {
-      productId: coffeeProduct.id,
-      priceOverride: 420000,
-      stockOnHand: 5,
-      isActive: true,
-    },
-    create: {
-      productId: coffeeProduct.id,
-      sku: "COFFEE-1KG",
-      priceOverride: 420000,
-      stockOnHand: 5,
-      isActive: true,
-    },
-  });
-
-  await syncVariantOptionCombination(coffee250g.id, size250g.id);
-  await syncVariantOptionCombination(coffee1kg.id, size1kg.id);
 
   const existingShirt = await prisma.product.findUnique({
     where: { slug: "linen-weekend-shirt" },

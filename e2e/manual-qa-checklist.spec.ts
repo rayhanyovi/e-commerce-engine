@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import {
+  E2E_SEED_PRODUCT,
   createCustomerCredentials,
   login,
   logout,
@@ -91,25 +92,36 @@ test("manual QA checklist covers customer and admin operational flows", async ({
   });
   await expect(page).toHaveURL(/\/orders$/);
 
-  await page.goto("/products?search=coffee&category=beverages");
+  await page.goto(
+    `/products?search=${E2E_SEED_PRODUCT.searchTerm}&category=${E2E_SEED_PRODUCT.categorySlug}`,
+  );
   await expect(page.getByRole("heading", { name: "Products" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Artisan Coffee Beans/i })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: new RegExp(E2E_SEED_PRODUCT.name, "i") }),
+  ).toBeVisible();
 
-  await page.goto("/products/artisan-coffee-beans");
+  await page.goto(`/products/${E2E_SEED_PRODUCT.slug}`);
   const variantSelect = page.getByLabel("Variant");
 
   await expect(variantSelect).toBeVisible();
   await variantSelect.selectOption({ index: 1 });
-  await expect(page.getByText("Selected variant: Size: 1kg")).toBeVisible();
-  await expect(page.getByText("SKU: COFFEE-1KG")).toBeVisible();
+  await expect(
+    page.getByText(`Selected variant: ${E2E_SEED_PRODUCT.featuredVariantLabel}`),
+  ).toBeVisible();
+  await expect(page.getByText(`SKU: ${E2E_SEED_PRODUCT.featuredVariantSku}`)).toBeVisible();
 
   await page.getByRole("button", { name: "Add to Cart" }).click();
-  await expect(page.getByText("Artisan Coffee Beans added to cart")).toBeVisible();
+  await expect(
+    page.getByText(`${E2E_SEED_PRODUCT.name} added to cart`),
+  ).toBeVisible();
   await page.getByRole("link", { name: "Open Cart" }).click();
   await expect(page).toHaveURL(/\/cart$/);
-  await expect(page.getByText("Size: 1kg")).toBeVisible();
+  await expect(page.getByText(E2E_SEED_PRODUCT.featuredVariantLabel)).toBeVisible();
 
-  const cartArticle = page.locator("article").filter({ hasText: "Artisan Coffee Beans" }).first();
+  const cartArticle = page
+    .locator("article")
+    .filter({ hasText: E2E_SEED_PRODUCT.name })
+    .first();
 
   await cartArticle.getByRole("button", { name: "+" }).click();
   await expect(cartArticle).toContainText("Rp 840.000");
