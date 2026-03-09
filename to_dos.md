@@ -188,7 +188,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Port low stock list.
 - [x] Pastikan stock movement tercatat juga untuk reserve, consume, dan release order.
 - [x] Tambahkan guard supaya stock tidak pernah negatif.
-- [ ] Tambahkan referensi `actorId` dan `referenceId` secara konsisten.
+- [x] Tambahkan referensi `actorId` dan `referenceId` secara konsisten.
 
 ## 15. Addresses Domain
 

@@ -115,7 +115,8 @@ export default async function AdminInventoryPage({
           </div>
           <p className="mt-4 text-sm leading-6 text-muted">
             Route ini sekarang baca movement log dan low-stock list langsung dari inventory module
-            baru. Order reserve/release/consume akan ikut hidup saat orders domain dipindahkan.
+            baru. Actor dan reference tiap movement juga sudah ditampilkan supaya tracing stock
+            change lebih jelas.
           </p>
         </div>
       </section>
@@ -185,6 +186,8 @@ export default async function AdminInventoryPage({
                     <th className="pb-3 pr-4 font-medium">Date</th>
                     <th className="pb-3 pr-4 font-medium">Variant</th>
                     <th className="pb-3 pr-4 font-medium">Type</th>
+                    <th className="pb-3 pr-4 font-medium">Actor</th>
+                    <th className="pb-3 pr-4 font-medium">Reference</th>
                     <th className="pb-3 pr-4 font-medium">Qty</th>
                   </tr>
                 </thead>
@@ -198,6 +201,8 @@ export default async function AdminInventoryPage({
                         <div className="text-xs text-muted">ID: {movement.productVariantId}</div>
                       </td>
                       <td className="py-3 pr-4">{movement.movementLabel}</td>
+                      <td className="py-3 pr-4 text-muted">{movement.actorLabel}</td>
+                      <td className="py-3 pr-4 text-muted">{movement.referenceLabel}</td>
                       <td className="py-3 pr-4">
                         <span className={movement.qty > 0 ? "text-emerald-700" : "text-red-700"}>
                           {movement.qty > 0 ? "+" : ""}

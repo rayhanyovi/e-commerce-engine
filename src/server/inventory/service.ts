@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { Prisma } from "@prisma/client";
 
 import {
@@ -16,6 +18,48 @@ export const STOCK_MOVEMENT_LABELS: Record<string, string> = {
   ORDER_CONSUME: "Order Consume",
   INITIAL_STOCK: "Initial Stock",
 };
+
+function createManualAdjustmentReferenceId() {
+  return `ADJ-${randomUUID().slice(0, 8).toUpperCase()}`;
+}
+
+function formatActorLabel(actor: {
+  id: string;
+  name: string;
+  email: string;
+} | null) {
+  if (!actor) {
+    return "System";
+  }
+
+  return actor.name || actor.email || actor.id;
+}
+
+function formatReferenceLabel(movement: {
+  type: string;
+  referenceId: string | null;
+}) {
+  if (!movement.referenceId) {
+    return "None";
+  }
+
+  if (
+    movement.type === "ORDER_RESERVE" ||
+    movement.type === "ORDER_CANCEL_RELEASE" ||
+    movement.type === "ORDER_CONSUME"
+  ) {
+    return `Order ${movement.referenceId}`;
+  }
+
+  if (
+    movement.type === "ADJUSTMENT_IN" ||
+    movement.type === "ADJUSTMENT_OUT"
+  ) {
+    return `Adjustment ${movement.referenceId}`;
+  }
+
+  return movement.referenceId;
+}
 
 function formatVariantLabel(
   optionCombination: Array<{
@@ -69,6 +113,7 @@ export async function adjustStock(dto: AdjustStockDto, actorId: string) {
   }
 
   const type = dto.qty > 0 ? "ADJUSTMENT_IN" : "ADJUSTMENT_OUT";
+  const referenceId = createManualAdjustmentReferenceId();
 
   const [updatedVariant, movement] = await prisma.$transaction(async (tx) => {
     const updated = await tx.productVariant.update({
@@ -83,6 +128,7 @@ export async function adjustStock(dto: AdjustStockDto, actorId: string) {
         type,
         qty: dto.qty,
         reason: dto.reason,
+        referenceId,
         actorId,
       },
     });
@@ -108,6 +154,7 @@ export async function adjustStock(dto: AdjustStockDto, actorId: string) {
         metadata: {
           productId: variant.product.id,
           productName: variant.product.name,
+          referenceId,
         },
       },
     });
@@ -181,6 +228,8 @@ export async function listStockMovements(query: StockMovementsQuery) {
         movement.variant.optionCombination,
         movement.variant.sku,
       ),
+      actorLabel: formatActorLabel(movement.actor),
+      referenceLabel: formatReferenceLabel(movement),
     })),
     total,
   };

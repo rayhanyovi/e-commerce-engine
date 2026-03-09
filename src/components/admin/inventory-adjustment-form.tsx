@@ -10,6 +10,9 @@ interface AdjustmentSuccess {
     id: string;
     stockOnHand: number;
   };
+  movement: {
+    referenceId: string | null;
+  };
 }
 
 export function InventoryAdjustmentForm() {
@@ -48,7 +51,7 @@ export function InventoryAdjustmentForm() {
       }
 
       setMessage(
-        `Stock updated. Variant ${payload.data.variant.id} sekarang punya ${payload.data.variant.stockOnHand} unit.`,
+        `Stock updated. Variant ${payload.data.variant.id} sekarang punya ${payload.data.variant.stockOnHand} unit. Reference: ${payload.data.movement.referenceId ?? "-"}.`,
       );
       setProductVariantId("");
       setQty("");
