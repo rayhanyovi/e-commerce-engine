@@ -22,7 +22,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 ## 2. Dependency Strategy
 
 - [x] Tentukan stack target untuk data layer: Prisma tetap dipakai atau ada perubahan.
-- [ ] Tentukan auth stack: custom JWT cookie, Lucia/Auth.js, atau solusi internal lain.
+- [x] Tentukan auth stack: custom JWT cookie, Lucia/Auth.js, atau solusi internal lain.
 - [ ] Tentukan apakah React Query masih dipakai di Next app atau hanya dipakai untuk bagian yang benar-benar client-heavy.
 - [ ] Port atau regenerate komponen shadcn/ui agar kompatibel dengan Next + React 19.
 - [ ] Rencanakan migrasi Tailwind 3 tokens ke Tailwind 4.
@@ -63,7 +63,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 - [x] Buat folder server layer, misalnya `src/server/`.
 - [ ] Pisahkan module menjadi:
-- [ ] `auth`
+- [x] `auth`
 - [ ] `catalog`
 - [ ] `cart`
 - [ ] `checkout`
@@ -80,17 +80,17 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] `isPromotionEligible`
 - [x] `calculateShipping`
 - [x] `checkStockAvailability`
-- [ ] Tambahkan error normalizer yang konsisten.
+- [x] Tambahkan error normalizer yang konsisten.
 - [ ] Tambahkan request logging dan request ID di Next layer bila dibutuhkan.
 
 ## 7. Auth and Session
 
-- [ ] Implement register.
-- [ ] Implement login.
-- [ ] Implement logout.
-- [ ] Implement `me` session/profile fetch.
-- [ ] Pindahkan penyimpanan auth dari `localStorage` ke cookie/httpOnly atau session mechanism lain yang SSR-friendly.
-- [ ] Implement admin role guard untuk route admin dan server actions admin.
+- [x] Implement register.
+- [x] Implement login.
+- [x] Implement logout.
+- [x] Implement `me` session/profile fetch.
+- [x] Pindahkan penyimpanan auth dari `localStorage` ke cookie/httpOnly atau session mechanism lain yang SSR-friendly.
+- [x] Implement admin role guard untuk route admin dan server actions admin.
 - [ ] Implement profile update endpoint/page bila memang dibutuhkan.
 - [ ] Putuskan nasib guest cart dan guest checkout:
 - [ ] jika guest checkout didukung, implement guest identity cookie end-to-end

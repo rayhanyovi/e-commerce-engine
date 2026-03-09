@@ -1,3 +1,4 @@
+import { hash } from "bcryptjs";
 import { PrismaClient, UserRole } from "@prisma/client";
 
 import { StoreConfigKeys } from "../src/shared/contracts/dto/store-config.dto";
@@ -64,6 +65,8 @@ async function seedAdminUser() {
   const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@example.com";
   const adminName = process.env.SEED_ADMIN_NAME ?? "Store Admin";
   const adminPhone = process.env.SEED_ADMIN_PHONE ?? "+6280000000000";
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "Admin12345!";
+  const passwordHash = await hash(adminPassword, 12);
 
   await prisma.user.upsert({
     where: { email: adminEmail },
@@ -71,13 +74,14 @@ async function seedAdminUser() {
       role: UserRole.ADMIN,
       name: adminName,
       phone: adminPhone,
+      password: passwordHash,
     },
     create: {
       role: UserRole.ADMIN,
       email: adminEmail,
       name: adminName,
       phone: adminPhone,
-      password: null,
+      password: passwordHash,
     },
   });
 }
