@@ -246,7 +246,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Migrasikan payments page.
 - [ ] Migrasikan users page.
 - [x] Migrasikan inventory page.
-- [ ] Migrasikan audit page.
+- [x] Migrasikan audit page.
 - [x] Migrasikan settings page.
 
 ## 20. Client State and Hooks Re-Design
