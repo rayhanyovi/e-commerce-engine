@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import {
   E2E_SEED_PRODUCT,
+  clearCart,
   createCustomerCredentials,
   login,
   logout,
@@ -69,6 +70,14 @@ function extractVariantIdFromText(value: string | null) {
 
 test.setTimeout(180_000);
 
+async function expectSettingsMutationFeedback(page: Page) {
+  await expect(
+    page
+      .getByText(/Saved \d+ setting\(s\)|No settings changed/)
+      .first(),
+  ).toBeVisible();
+}
+
 test("manual QA checklist covers customer and admin operational flows", async ({ page }) => {
   const voucherCode = buildVoucherCode();
   const customer = createCustomerCredentials("manual-qa");
@@ -91,6 +100,7 @@ test("manual QA checklist covers customer and admin operational flows", async ({
     password: customer.password,
   });
   await expect(page).toHaveURL(/\/orders$/);
+  await clearCart(page);
 
   await page.goto(
     `/products?search=${E2E_SEED_PRODUCT.searchTerm}&category=${E2E_SEED_PRODUCT.categorySlug}`,
@@ -109,6 +119,11 @@ test("manual QA checklist covers customer and admin operational flows", async ({
     page.getByText(`Selected variant: ${E2E_SEED_PRODUCT.featuredVariantLabel}`),
   ).toBeVisible();
   await expect(page.getByText(`SKU: ${E2E_SEED_PRODUCT.featuredVariantSku}`)).toBeVisible();
+  await variantSelect.selectOption({ index: 0 });
+  await expect(
+    page.getByText(`Selected variant: ${E2E_SEED_PRODUCT.purchaseVariantLabel}`),
+  ).toBeVisible();
+  await expect(page.getByText(`SKU: ${E2E_SEED_PRODUCT.purchaseVariantSku}`)).toBeVisible();
 
   await page.getByRole("button", { name: "Add to Cart" }).click();
   await expect(
@@ -116,7 +131,7 @@ test("manual QA checklist covers customer and admin operational flows", async ({
   ).toBeVisible();
   await page.getByRole("link", { name: "Open Cart" }).click();
   await expect(page).toHaveURL(/\/cart$/);
-  await expect(page.getByText(E2E_SEED_PRODUCT.featuredVariantLabel)).toBeVisible();
+  await expect(page.getByText(E2E_SEED_PRODUCT.purchaseVariantLabel)).toBeVisible();
 
   const cartArticle = page
     .locator("article")
@@ -124,7 +139,7 @@ test("manual QA checklist covers customer and admin operational flows", async ({
     .first();
 
   await cartArticle.getByRole("button", { name: "+" }).click();
-  await expect(cartArticle).toContainText("Rp 840.000");
+  await expect(cartArticle).toContainText(E2E_SEED_PRODUCT.purchaseVariantQtyTwoTotal);
 
   await page.getByRole("link", { name: "Continue to Checkout" }).click();
   await expect(page).toHaveURL(/\/checkout$/);
@@ -197,11 +212,13 @@ test("manual QA checklist covers customer and admin operational flows", async ({
 
   await storeNameInput.fill(nextStoreName);
   await page.getByRole("button", { name: "Save Settings" }).click();
-  await expect(page.getByText(/Saved \d+ setting\(s\)/)).toBeVisible();
+  await expectSettingsMutationFeedback(page);
+  await page.goto("/admin/settings");
   await expect(storeNameInput).toHaveValue(nextStoreName);
 
   await storeNameInput.fill(originalStoreName);
   await page.getByRole("button", { name: "Save Settings" }).click();
-  await expect(page.getByText(/Saved \d+ setting\(s\)/)).toBeVisible();
+  await expectSettingsMutationFeedback(page);
+  await page.goto("/admin/settings");
   await expect(storeNameInput).toHaveValue(originalStoreName);
 });

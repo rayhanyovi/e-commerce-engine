@@ -166,7 +166,7 @@ UI system yang aktif juga sudah disederhanakan:
 
 | Domain | Status | Notes |
 | --- | --- | --- |
-| UI consistency pass | Pending | Final consistency pass untuk admin dan storefront masih terbuka |
+| Legacy cutover | Pending | `ecommercestarter/` masih sengaja ditahan sampai penghapusan final dilakukan |
 
 ## Current Route Surface
 
@@ -471,7 +471,6 @@ Itu akan menghabiskan waktu di tempat yang salah.
 
 Yang masih perlu dibereskan agar engine ini benar-benar matang:
 
-- design consistency pass
 - removal final terhadap `ecommercestarter/`
 
 Jadi project ini sudah cukup jelas sebagai engine, tetapi belum final-complete.

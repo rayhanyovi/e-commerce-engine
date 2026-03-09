@@ -7,6 +7,9 @@ export const E2E_SEED_PRODUCT = {
   searchTerm: "e2e",
   featuredVariantLabel: "Size: 1kg",
   featuredVariantSku: "E2E-COFFEE-1KG",
+  purchaseVariantLabel: "Size: 250g",
+  purchaseVariantSku: "E2E-COFFEE-250G",
+  purchaseVariantQtyTwoTotal: "Rp 240.000",
 } as const;
 
 export interface CustomerCredentials {
@@ -48,6 +51,24 @@ export async function logout(page: Page) {
   await page.getByRole("button", { name: "Logout" }).click();
 }
 
+export async function clearCart(page: Page) {
+  const result = await page.evaluate(async () => {
+    const response = await fetch("/api/cart", {
+      method: "DELETE",
+      credentials: "same-origin",
+    });
+    const body = await response.json().catch(() => null);
+
+    return {
+      ok: response.ok,
+      status: response.status,
+      body,
+    };
+  });
+
+  expect(result.ok, `cart clear failed with status ${result.status}`).toBeTruthy();
+}
+
 export async function addSeedProductToCart(page: Page) {
   await page.goto(`/products/${E2E_SEED_PRODUCT.slug}`);
   await expect(
@@ -58,7 +79,7 @@ export async function addSeedProductToCart(page: Page) {
   const optionCount = await variantSelect.locator("option").count();
   let added = false;
 
-  for (let index = optionCount - 1; index >= 0; index -= 1) {
+  for (let index = 0; index < optionCount; index += 1) {
     await variantSelect.selectOption({ index });
     await page.getByRole("button", { name: "Add to Cart" }).click();
 

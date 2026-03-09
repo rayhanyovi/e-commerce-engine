@@ -213,7 +213,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Port audit log list.
 - [x] Putuskan desain audit log final:
 - [x] generic polymorphic log
-- [ ] atau audit per entity type
+- [x] Tegaskan bahwa audit tidak dipisah per entity type; tetap gunakan generic polymorphic log.
 - [x] Pastikan audit record dibuat untuk order, payment, promotion, inventory, dan settings changes yang penting.
 
 ## 18. Storefront Pages
@@ -263,7 +263,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Port komponen loading/empty/error states.
 - [x] Audit komponen shadcn mana yang benar-benar dipakai.
 - [x] Hapus komponen generated yang tidak dipakai bila sudah aman.
-- [ ] Pastikan desain admin dan storefront konsisten di Next app.
+- [x] Pastikan desain admin dan storefront konsisten di Next app.
 
 ## 22. Security and Access Control
 
