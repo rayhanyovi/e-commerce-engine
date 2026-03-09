@@ -81,7 +81,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] `calculateShipping`
 - [x] `checkStockAvailability`
 - [x] Tambahkan error normalizer yang konsisten.
-- [ ] Tambahkan request logging dan request ID di Next layer bila dibutuhkan.
+- [x] Tambahkan request logging dan request ID di Next layer bila dibutuhkan.
 
 ## 7. Auth and Session
 
@@ -276,8 +276,8 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 ## 23. Observability and Error Handling
 
 - [ ] Port error envelope atau definisikan standar error baru.
-- [ ] Tambahkan structured logging.
-- [ ] Tambahkan request ID propagation bila diperlukan.
+- [x] Tambahkan structured logging.
+- [x] Tambahkan request ID propagation bila diperlukan.
 - [x] Tambahkan halaman error dan not-found yang proper di App Router.
 - [ ] Tangani empty states dan loading states untuk semua page migrasi.
 

@@ -2,12 +2,38 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { AUTH_COOKIE_NAME } from "@/server/auth/constants";
 import { verifySessionToken } from "@/server/auth/session";
+import {
+  createRequestHeadersWithId,
+  getOrCreateRequestId,
+  logRequestEvent,
+  REQUEST_ID_HEADER,
+} from "@/server/observability";
 
 const adminMatcher = /^\/admin(?:\/.*)?$/;
 
 export async function proxy(request: NextRequest) {
-  if (!adminMatcher.test(request.nextUrl.pathname)) {
-    return NextResponse.next();
+  const requestId = getOrCreateRequestId(request);
+  const requestHeaders = createRequestHeadersWithId(request, requestId);
+  const pathname = request.nextUrl.pathname;
+
+  logRequestEvent({
+    type: "request",
+    requestId,
+    method: request.method,
+    pathname,
+    outcome: adminMatcher.test(pathname) ? "admin-route" : "public-route",
+  });
+
+  if (!adminMatcher.test(pathname)) {
+    const response = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+
+    response.headers.set(REQUEST_ID_HEADER, requestId);
+
+    return response;
   }
 
   const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
@@ -15,18 +41,49 @@ export async function proxy(request: NextRequest) {
 
   if (!session) {
     const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
+    loginUrl.searchParams.set("redirect", pathname);
 
-    return NextResponse.redirect(loginUrl);
+    logRequestEvent({
+      type: "security",
+      requestId,
+      method: request.method,
+      pathname,
+      status: 307,
+      outcome: "admin-auth-required",
+    });
+
+    const response = NextResponse.redirect(loginUrl);
+    response.headers.set(REQUEST_ID_HEADER, requestId);
+
+    return response;
   }
 
   if (session.role !== "ADMIN") {
-    return NextResponse.redirect(new URL("/", request.url));
+    logRequestEvent({
+      type: "security",
+      requestId,
+      method: request.method,
+      pathname,
+      status: 307,
+      outcome: "admin-forbidden",
+    });
+
+    const response = NextResponse.redirect(new URL("/", request.url));
+    response.headers.set(REQUEST_ID_HEADER, requestId);
+
+    return response;
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
+  response.headers.set(REQUEST_ID_HEADER, requestId);
+
+  return response;
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };
