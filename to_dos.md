@@ -298,8 +298,8 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 25. Verification and Cutover
 
-- [ ] Siapkan checklist parity antara source `ecommercestarter` dan app Next baru.
-- [ ] Bandingkan route per route dan endpoint per endpoint.
+- [x] Siapkan checklist parity antara source `ecommercestarter` dan app Next baru.
+- [x] Bandingkan route per route dan endpoint per endpoint.
 - [ ] Lakukan manual QA untuk:
 - [ ] auth
 - [ ] catalog
