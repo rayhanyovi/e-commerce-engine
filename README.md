@@ -70,6 +70,14 @@ Masih pending atau partial:
 - `ecommercestarter/`
   legacy reference sementara selama parity belum selesai
 
+## API Guarantees
+
+- Customer-owned API resources seperti orders, addresses, payment instructions, dan payment proof
+  dijaga dengan user scoping di server layer, bukan hanya di client.
+- API success dan API error memakai envelope yang konsisten lewat shared contracts.
+- Proxy-level security rejection seperti invalid request origin juga mengembalikan JSON error
+  envelope yang sama.
+
 ## Working Model
 
 Untuk project toko baru, pendekatan yang diinginkan adalah:

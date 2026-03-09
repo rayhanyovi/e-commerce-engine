@@ -268,14 +268,14 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 ## 22. Security and Access Control
 
 - [x] Pastikan seluruh route admin dilindungi di server, bukan cuma di client.
-- [ ] Pastikan endpoint owner-only seperti orders, addresses, payment proof tidak bocor ke user lain.
+- [x] Pastikan endpoint owner-only seperti orders, addresses, payment proof tidak bocor ke user lain.
 - [x] Validasi input file proof bila upload tetap berbasis URL/path.
 - [ ] Review CORS sudah tidak relevan bila frontend/backend disatukan dalam Next app.
 - [x] Tambahkan CSRF/session hardening bila auth berbasis cookie.
 
 ## 23. Observability and Error Handling
 
-- [ ] Port error envelope atau definisikan standar error baru.
+- [x] Port error envelope atau definisikan standar error baru.
 - [x] Tambahkan structured logging.
 - [x] Tambahkan request ID propagation bila diperlukan.
 - [x] Tambahkan halaman error dan not-found yang proper di App Router.
