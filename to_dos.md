@@ -221,8 +221,8 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 - [x] Buat storefront layout Next.
 - [x] Migrasikan homepage.
-- [ ] Migrasikan products list page.
-- [ ] Migrasikan product detail page.
+- [x] Migrasikan products list page.
+- [x] Migrasikan product detail page.
 - [ ] Migrasikan cart page.
 - [ ] Migrasikan checkout page.
 - [ ] Migrasikan orders page.
@@ -238,14 +238,14 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Buat admin layout Next.
 - [ ] Migrasikan dashboard.
 - [ ] Migrasikan categories page.
-- [ ] Implementasikan products list yang belum jadi di source app.
+- [x] Implementasikan products list yang belum jadi di source app.
 - [ ] Migrasikan product create page.
 - [ ] Implementasikan product edit page sungguhan.
 - [ ] Migrasikan orders page.
 - [ ] Migrasikan promotions page.
 - [ ] Migrasikan payments page.
 - [ ] Migrasikan users page.
-- [ ] Migrasikan inventory page.
+- [x] Migrasikan inventory page.
 - [ ] Migrasikan audit page.
 - [ ] Migrasikan settings page.
 

@@ -16,7 +16,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               Admin Core
             </Link>
             <p className="mt-2 text-sm text-muted">
-              Shell admin sudah aktif. Guard auth dan data belum dihubungkan.
+              Guard auth, catalog, dan inventory sudah terhubung. Domain lain menyusul batch berikutnya.
             </p>
           </div>
 
@@ -52,7 +52,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               <div>
                 <h1 className="text-lg font-semibold">Admin Workspace</h1>
                 <p className="text-sm text-muted">
-                  Backend parity akan dihubungkan setelah auth dan server layer siap.
+                  Workspace ini sekarang membaca data langsung dari server modules di root Next app.
                 </p>
               </div>
               <Link
