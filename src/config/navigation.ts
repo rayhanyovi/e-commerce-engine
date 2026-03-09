@@ -1,0 +1,18 @@
+export const storefrontNav = [
+  { href: "/", label: "Home" },
+  { href: "/products", label: "Products" },
+  { href: "/cart", label: "Cart" },
+  { href: "/checkout", label: "Checkout" },
+  { href: "/orders", label: "Orders" },
+];
+
+export const adminNav = [
+  { href: "/admin", label: "Dashboard" },
+  { href: "/admin/catalog", label: "Catalog" },
+  { href: "/admin/inventory", label: "Inventory" },
+  { href: "/admin/orders", label: "Orders" },
+  { href: "/admin/payments", label: "Payments" },
+  { href: "/admin/promotions", label: "Promotions" },
+  { href: "/admin/settings", label: "Settings" },
+  { href: "/admin/audit", label: "Audit" },
+];
