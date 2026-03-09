@@ -51,7 +51,6 @@ Implemented and active:
 Still open:
 
 - `FREE_PRODUCT` promotion support
-- manual QA sign-off checklist
 - audit log schema cleanup
 - final legacy cutover and archive of `ecommercestarter/`
 
@@ -116,6 +115,7 @@ npm run lint
 npm run typecheck
 npm test
 npm run test:e2e
+npm run test:qa
 ```
 
 ## Testing Baseline
@@ -136,7 +136,7 @@ Current baseline on this repo:
 - `8` active test files
 - `45` passing tests
 - no placeholder Vitest scaffolds left in the active suite
-- `2` passing Playwright E2E specs for storefront checkout and admin payment review
+- `3` passing Playwright browser specs, including the dedicated manual QA checklist run
 
 Database bootstrap for local development:
 
@@ -212,6 +212,7 @@ docker build -t ecommerce-engine:latest .
 ## Project Docs
 
 - [overview.md](./overview.md): technical positioning, architecture, domain flows, and reuse model
+- [manual_qa_report.md](./manual_qa_report.md): latest scripted QA checklist run and operational notes
 - [parity_checklist.md](./parity_checklist.md): route and endpoint parity matrix against `ecommercestarter`
 - [cutover_plan.md](./cutover_plan.md): criteria for archiving and deleting `ecommercestarter`
 - [to_dos.md](./to_dos.md): migration and implementation backlog

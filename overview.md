@@ -166,8 +166,8 @@ UI system yang aktif juga sudah disederhanakan:
 
 | Domain | Status | Notes |
 | --- | --- | --- |
-| Manual QA sign-off | Pending | Checklist auth sampai settings update belum ditutup |
 | Audit schema cleanup | Pending | Generic audit log sudah jalan, tapi desain akhir masih ditinjau |
+| UI consistency pass | Pending | Final consistency pass untuk admin dan storefront masih terbuka |
 | `FREE_PRODUCT` promotions | Pending | Masih tercatat sebagai gap logic |
 
 ## Current Route Surface
@@ -473,8 +473,8 @@ Itu akan menghabiskan waktu di tempat yang salah.
 
 Yang masih perlu dibereskan agar engine ini benar-benar matang:
 
-- manual QA sign-off
 - support `FREE_PRODUCT`
+- design consistency pass
 - audit schema cleanup
 - removal final terhadap `ecommercestarter/`
 
