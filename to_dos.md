@@ -107,7 +107,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Port admin product create.
 - [x] Port admin product edit.
 - [x] Port admin product delete.
-- [ ] Port variant create/update/delete.
+- [x] Port variant create/update/delete.
 - [x] Perbaiki logic persistence option definitions dan variant combinations.
 - [x] Ganti implementasi yang salah dari `variantOptionValue` ke model yang benar sesuai Prisma.
 - [x] Tambahkan validasi uniqueness slug dan SKU secara konsisten.
@@ -239,8 +239,8 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Migrasikan dashboard.
 - [x] Migrasikan categories page.
 - [x] Implementasikan products list yang belum jadi di source app.
-- [ ] Migrasikan product create page.
-- [ ] Implementasikan product edit page sungguhan.
+- [x] Migrasikan product create page.
+- [x] Implementasikan product edit page sungguhan.
 - [x] Migrasikan orders page.
 - [x] Migrasikan promotions page.
 - [x] Migrasikan payments page.
@@ -322,8 +322,8 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [ ] Daftarkan dan selesaikan wiring auth middleware/session context.
 - [x] Selesaikan mismatch preview total vs final order total.
 - [x] Selesaikan mismatch payment status vs order status.
-- [ ] Selesaikan product variant persistence bug.
-- [ ] Selesaikan admin products page yang masih placeholder.
+- [x] Selesaikan product variant persistence bug.
+- [x] Selesaikan admin products page yang masih placeholder.
 - [ ] Selesaikan broken nav links `/categories` dan `/profile`.
 - [ ] Selesaikan seed default config yang belum terpakai.
 - [ ] Selesaikan audit log schema design yang masih problematik.

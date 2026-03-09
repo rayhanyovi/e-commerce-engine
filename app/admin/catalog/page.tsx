@@ -100,7 +100,7 @@ export default async function AdminCatalogPage({
           <p className="text-sm text-muted">Active On Page</p>
           <div className="mt-3 text-3xl font-semibold">{activeProductsOnPage}</div>
           <p className="mt-2 text-sm text-muted">
-            Product create, edit, delete, dan variant mutation jadi batch berikutnya.
+            Product create, edit, dan delete sekarang sudah terhubung ke admin product editor.
           </p>
         </div>
       </section>
@@ -152,12 +152,20 @@ export default async function AdminCatalogPage({
                 Search, filter, pagination, dan admin visibility sekarang sudah wired.
               </p>
             </div>
-            <Link
-              href="/api/admin/products"
-              className="rounded-full border border-border px-4 py-2 text-sm text-muted transition hover:text-foreground"
-            >
-              Inspect API
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/admin/products/create"
+                className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white"
+              >
+                Create Product
+              </Link>
+              <Link
+                href="/api/admin/products"
+                className="rounded-full border border-border px-4 py-2 text-sm text-muted transition hover:text-foreground"
+              >
+                Inspect API
+              </Link>
+            </div>
           </div>
 
           <form className="mt-5 grid gap-4 md:grid-cols-[1.3fr_0.8fr_0.8fr_auto]">
@@ -227,15 +235,23 @@ export default async function AdminCatalogPage({
                       <td className="py-3 pr-4">{formatPriceRange(product.priceRange)}</td>
                       <td className="py-3 pr-4">{product._count.variants}</td>
                       <td className="py-3 pr-4">
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs ${
-                            product.isActive
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-slate-200 text-slate-700"
-                          }`}
-                        >
-                          {product.isActive ? "Active" : "Inactive"}
-                        </span>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs ${
+                              product.isActive
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-slate-200 text-slate-700"
+                            }`}
+                          >
+                            {product.isActive ? "Active" : "Inactive"}
+                          </span>
+                          <Link
+                            href={`/admin/products/${product.id}`}
+                            className="text-xs font-medium text-accent transition hover:text-accent-strong"
+                          >
+                            Edit
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   ))}
