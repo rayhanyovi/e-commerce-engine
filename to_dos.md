@@ -260,7 +260,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 ## 21. UI System and Design Tokens
 
 - [ ] Port token warna dari `ecommercestarter/src/index.css`.
-- [ ] Port komponen loading/empty/error states.
+- [x] Port komponen loading/empty/error states.
 - [ ] Audit komponen shadcn mana yang benar-benar dipakai.
 - [ ] Hapus komponen generated yang tidak dipakai bila sudah aman.
 - [ ] Pastikan desain admin dan storefront konsisten di Next app.
@@ -279,7 +279,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Tambahkan structured logging.
 - [x] Tambahkan request ID propagation bila diperlukan.
 - [x] Tambahkan halaman error dan not-found yang proper di App Router.
-- [ ] Tangani empty states dan loading states untuk semua page migrasi.
+- [x] Tangani empty states dan loading states untuk semua page migrasi.
 
 ## 24. Testing
 

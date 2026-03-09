@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { PaymentStatusBadge } from "@/components/orders/payment-status-badge";
+import { DataState } from "@/components/ui/data-state";
 import { formatCurrency, formatDateTime } from "@/lib/formatters";
 import { toFlatSearchParams, type SearchParamInput } from "@/lib/search-params";
 import { listAdminOrders } from "@/server/orders";
@@ -35,6 +36,7 @@ export default async function AdminOrdersPage({
   const query = OrderListQuerySchema.parse(currentSearchParams);
   const result = await listAdminOrders(query);
   const totalPages = Math.max(1, Math.ceil(result.total / query.pageSize));
+  const hasActiveFilters = Boolean(query.search || query.status);
 
   return (
     <div className="space-y-8">
@@ -86,9 +88,25 @@ export default async function AdminOrdersPage({
       </form>
 
       {!result.orders.length ? (
-        <section className="rounded-[1.5rem] border border-border bg-surface p-8 text-sm text-muted">
-          No orders matched the current admin filters.
-        </section>
+        <DataState
+          eyebrow={hasActiveFilters ? "No Matches" : "Orders Empty"}
+          title={
+            hasActiveFilters
+              ? "No orders matched the current admin filters"
+              : "No orders have been recorded yet"
+          }
+          description={
+            hasActiveFilters
+              ? "Try a broader order status or remove the search term to inspect more records."
+              : "Orders will appear here after storefront checkout starts creating transactions."
+          }
+          size="compact"
+          actions={
+            hasActiveFilters
+              ? [{ href: "/admin/orders", label: "Reset filters", variant: "secondary" }]
+              : undefined
+          }
+        />
       ) : (
         <section className="space-y-4">
           {result.orders.map((order) => (

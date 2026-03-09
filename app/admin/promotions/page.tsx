@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { PromotionForm } from "@/components/admin/promotion-form";
+import { DataState } from "@/components/ui/data-state";
 import { formatCurrency, formatDateTime } from "@/lib/formatters";
 import { toFlatSearchParams, type SearchParamInput } from "@/lib/search-params";
 import { listAdminPromotions } from "@/server/promotions";
@@ -35,6 +36,7 @@ export default async function AdminPromotionsPage({
   const result = await listAdminPromotions(query);
   const totalPages = Math.max(1, Math.ceil(result.total / query.pageSize));
   const activePromotions = result.promotions.filter((promotion) => promotion.isActive).length;
+  const hasActiveFilters = Boolean(query.search || query.type || query.status);
 
   return (
     <div className="space-y-8">
@@ -128,9 +130,25 @@ export default async function AdminPromotionsPage({
           </section>
 
           {!result.promotions.length ? (
-            <section className="rounded-[1.5rem] border border-border bg-surface p-8 text-sm text-muted">
-              No promotions matched the current admin filters.
-            </section>
+            <DataState
+              eyebrow={hasActiveFilters ? "No Matches" : "Promotions Empty"}
+              title={
+                hasActiveFilters
+                  ? "No promotions matched the current filters"
+                  : "No promotions have been created yet"
+              }
+              description={
+                hasActiveFilters
+                  ? "Adjust the search, type, or status filters to widen the promotion registry query."
+                  : "Create the first promotion from this page to activate voucher and discount rules in the engine."
+              }
+              size="compact"
+              actions={
+                hasActiveFilters
+                  ? [{ href: "/admin/promotions", label: "Reset filters", variant: "secondary" }]
+                  : undefined
+              }
+            />
           ) : (
             <section className="space-y-4">
               {result.promotions.map((promotion) => (

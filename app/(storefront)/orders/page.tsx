@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { PaymentStatusBadge } from "@/components/orders/payment-status-badge";
+import { DataState } from "@/components/ui/data-state";
 import { formatCurrency, formatDateTime } from "@/lib/formatters";
 import { toFlatSearchParams, type SearchParamInput } from "@/lib/search-params";
 import { getServerCurrentUser } from "@/server/auth";
@@ -69,6 +70,7 @@ export default async function OrdersPage({
 
   const result = await listMyOrders(user.id, query);
   const totalPages = Math.max(1, Math.ceil(result.total / query.pageSize));
+  const hasActiveFilters = Boolean(query.search || query.status);
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-10 lg:px-10">
@@ -118,9 +120,25 @@ export default async function OrdersPage({
       </form>
 
       {!result.orders.length ? (
-        <section className="rounded-[1.5rem] border border-border bg-surface p-8 text-sm text-muted">
-          No orders matched the current filters yet.
-        </section>
+        <DataState
+          eyebrow={hasActiveFilters ? "No Matches" : "Orders Empty"}
+          title={
+            hasActiveFilters
+              ? "No orders matched the current filters yet"
+              : "No orders have been placed yet"
+          }
+          description={
+            hasActiveFilters
+              ? "Try resetting the search or status filter to inspect a wider order history."
+              : "Your order history will appear here after checkout creates the first transaction."
+          }
+          size="compact"
+          actions={
+            hasActiveFilters
+              ? [{ href: "/orders", label: "Reset filters", variant: "secondary" }]
+              : [{ href: "/products", label: "Browse products" }]
+          }
+        />
       ) : (
         <section className="space-y-4">
           {result.orders.map((order) => (

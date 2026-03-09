@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AdminPaymentReviewForm } from "@/components/admin/admin-payment-review-form";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { PaymentStatusBadge } from "@/components/orders/payment-status-badge";
+import { DataState } from "@/components/ui/data-state";
 import { formatCurrency, formatDateTime } from "@/lib/formatters";
 import { toFlatSearchParams, type SearchParamInput } from "@/lib/search-params";
 import { listAdminPaymentReviewQueue } from "@/server/payments";
@@ -36,6 +37,7 @@ export default async function AdminPaymentsPage({
   const query = PaymentReviewQueueQuerySchema.parse(currentSearchParams);
   const result = await listAdminPaymentReviewQueue(query);
   const totalPages = Math.max(1, Math.ceil(result.total / query.pageSize));
+  const hasActiveFilters = Boolean(query.status);
 
   return (
     <div className="space-y-8">
@@ -76,9 +78,25 @@ export default async function AdminPaymentsPage({
       </form>
 
       {!result.payments.length ? (
-        <section className="rounded-[1.5rem] border border-border bg-surface p-8 text-sm text-muted">
-          No payment proofs are waiting in the admin review queue.
-        </section>
+        <DataState
+          eyebrow={hasActiveFilters ? "No Matches" : "Queue Empty"}
+          title={
+            hasActiveFilters
+              ? "No payments matched this queue filter"
+              : "No payment proofs are waiting for review"
+          }
+          description={
+            hasActiveFilters
+              ? "Try a different payment status filter or reset the queue view."
+              : "Manual transfer review is connected, but there are no submitted proofs waiting in the admin queue right now."
+          }
+          size="compact"
+          actions={
+            hasActiveFilters
+              ? [{ href: "/admin/payments", label: "Reset filters", variant: "secondary" }]
+              : undefined
+          }
+        />
       ) : (
         <section className="space-y-4">
           {result.payments.map((payment) => (
