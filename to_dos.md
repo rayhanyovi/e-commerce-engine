@@ -227,8 +227,8 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [ ] Migrasikan checkout page.
 - [ ] Migrasikan orders page.
 - [ ] Migrasikan addresses page.
-- [ ] Migrasikan login page.
-- [ ] Migrasikan register page.
+- [x] Migrasikan login page.
+- [x] Migrasikan register page.
 - [ ] Putuskan apakah `/categories` akan dibuat atau link-nya dihapus.
 - [ ] Putuskan apakah `/profile` akan dibuat atau link-nya dihapus.
 - [ ] Ganti penggunaan `<img>` external ke strategi `next/image` atau pertahankan `<img>` dengan alasan yang jelas.

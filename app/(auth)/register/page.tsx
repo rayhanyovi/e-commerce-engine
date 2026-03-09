@@ -1,41 +1,30 @@
-import Link from "next/link";
+import { RegisterForm } from "@/components/auth/register-form";
 
 export default function RegisterPage() {
   return (
     <main className="mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-5xl items-center px-6 py-10 lg:px-10">
       <section className="grid w-full gap-6 rounded-[2rem] border border-border bg-surface p-6 lg:grid-cols-[0.9fr_1.1fr] lg:p-8">
         <div className="rounded-[1.5rem] border border-border bg-background p-5">
-          <p className="text-sm uppercase tracking-[0.18em] text-muted">Auth Shell</p>
+          <p className="text-sm uppercase tracking-[0.18em] text-muted">Customer Onboarding</p>
           <h1 className="mt-4 text-3xl font-semibold">Register</h1>
           <p className="mt-3 text-sm leading-7 text-muted">
-            Route final untuk onboarding customer sudah ada. Validasi schema dan session issuance akan
-            dipasang di batch auth berikutnya.
+            Registrasi customer sekarang langsung membuat account, issue session cookie, lalu bawa
+            user ke flow storefront tanpa ngelewatin localStorage lagi.
           </p>
+
+          <div className="mt-6 grid gap-3 text-sm text-muted">
+            <div className="rounded-2xl border border-border bg-surface px-4 py-4 leading-6">
+              Register flow memakai schema `RegisterSchema`, hash password di server, lalu issue
+              session cookie saat request sukses.
+            </div>
+            <div className="rounded-2xl border border-border bg-surface px-4 py-4 leading-6">
+              Phone bersifat opsional sekarang supaya customer onboarding tidak terlalu berat di
+              awal.
+            </div>
+          </div>
         </div>
 
-        <form className="space-y-4 rounded-[1.5rem] border border-border bg-background p-5">
-          <label className="block text-sm font-medium">
-            Name
-            <input className="mt-2 w-full rounded-2xl border border-border bg-surface px-4 py-3 outline-none" placeholder="Your name" />
-          </label>
-          <label className="block text-sm font-medium">
-            Email
-            <input className="mt-2 w-full rounded-2xl border border-border bg-surface px-4 py-3 outline-none" placeholder="you@example.com" />
-          </label>
-          <label className="block text-sm font-medium">
-            Password
-            <input type="password" className="mt-2 w-full rounded-2xl border border-border bg-surface px-4 py-3 outline-none" placeholder="Minimum 8 characters" />
-          </label>
-          <button type="button" className="w-full rounded-full bg-accent px-5 py-3 text-sm font-medium text-white">
-            Register Soon
-          </button>
-          <p className="text-sm text-muted">
-            Sudah punya akun?{" "}
-            <Link href="/login" className="font-medium text-foreground underline">
-              Login
-            </Link>
-          </p>
-        </form>
+        <RegisterForm />
       </section>
     </main>
   );
