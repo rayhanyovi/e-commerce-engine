@@ -65,7 +65,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [ ] Pisahkan module menjadi:
 - [x] `auth`
 - [x] `catalog`
-- [ ] `cart`
+- [x] `cart`
 - [ ] `checkout`
 - [ ] `orders`
 - [ ] `payments`
@@ -114,14 +114,14 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 9. Cart Domain
 
-- [ ] Port active cart lookup.
-- [ ] Port guest cart identity handling bila dibutuhkan.
-- [ ] Port add item.
-- [ ] Port update qty.
-- [ ] Port remove item.
-- [ ] Port clear cart.
-- [ ] Tambahkan validasi stok dan availability saat add/update cart.
-- [ ] Tentukan apakah cart disimpan via API handlers, server actions, atau hybrid.
+- [x] Port active cart lookup.
+- [x] Port guest cart identity handling bila dibutuhkan.
+- [x] Port add item.
+- [x] Port update qty.
+- [x] Port remove item.
+- [x] Port clear cart.
+- [x] Tambahkan validasi stok dan availability saat add/update cart.
+- [x] Tentukan apakah cart disimpan via API handlers, server actions, atau hybrid.
 
 ## 10. Checkout Domain
 
