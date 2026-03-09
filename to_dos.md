@@ -231,7 +231,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Migrasikan register page.
 - [x] Putuskan apakah `/categories` akan dibuat atau link-nya dihapus.
 - [x] Putuskan apakah `/profile` akan dibuat atau link-nya dihapus.
-- [ ] Ganti penggunaan `<img>` external ke strategi `next/image` atau pertahankan `<img>` dengan alasan yang jelas.
+- [x] Ganti penggunaan `<img>` external ke strategi `next/image` atau pertahankan `<img>` dengan alasan yang jelas.
 
 ## 19. Admin Pages
 
@@ -327,4 +327,4 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Selesaikan broken nav links `/categories` dan `/profile`.
 - [ ] Selesaikan seed default config yang belum terpakai.
 - [ ] Selesaikan audit log schema design yang masih problematik.
-- [ ] Selesaikan build root yang gagal karena source lama ikut ter-compile.
+- [x] Selesaikan build root yang gagal karena source lama ikut ter-compile.
