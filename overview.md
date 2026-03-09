@@ -1,396 +1,473 @@
 # E-Commerce Engine Overview
 
-## Scope
+## Positioning
 
-Dokumen ini merangkum hasil audit codebase saat ini dan memetakan apa yang sudah ada di `ecommercestarter`, apa yang belum beres, serta bagaimana memandangnya sebagai sumber migrasi ke Next.js fullstack.
+Project ini bukan ditujukan sebagai satu website toko yang statis. Arah utamanya adalah membangun `reusable ecommerce engine` berbasis Next.js fullstack yang bisa dipakai ulang untuk berbagai jenis toko:
 
-## Audit Snapshot
+- toko kue
+- toko sepatu
+- toko fashion
+- toko furniture
+- toko lain dengan kebutuhan commerce yang mirip
 
-- Root project `c:\Projects\e-commerce-engine` saat ini masih Next.js scaffold default (`app/page.tsx`, `app/layout.tsx`, `app/globals.css`).
-- Source app yang mau dimigrasikan ada di `ecommercestarter`.
-- Source frontend memakai Vite + React 18 + React Router + TanStack Query + shadcn/ui + Tailwind 3.
-- Source backend ditulis dengan pola NestJS + Prisma + shared Zod contracts, tetapi belum tersusun sebagai workspace yang benar-benar runnable.
-- Shared contracts ada di `ecommercestarter/packages/contracts/src`.
-- `ecommercestarter` belum punya `node_modules`, jadi frontend source belum bisa diverifikasi dengan build/test di workspace saat ini.
-- `npm run build` di root gagal karena `tsconfig.json` root meng-include `ecommercestarter/backend/src/**/*.ts`, sementara dependency NestJS tidak ada di root package.
+Ide utamanya sederhana:
 
-## Workspace Map
+- engine dibangun sekali
+- business logic distabilkan sekali
+- kontrak data dan flow operasional dijaga tetap konsisten
+- UI per client tinggal menjadi lapisan presentasi di atas engine itu
 
-| Path | Peran |
+Karena itu, aset utama project ini bukan hanya kumpulan function dan hook. Yang lebih penting adalah kombinasi dari:
+
+- data model
+- validation contract
+- server modules
+- state machine order/payment
+- admin operations
+- client integration layer yang tipis dan konsisten
+
+`ecommercestarter/` saat ini hanya dipakai sebagai reference system sampai parity selesai, lalu akan dihapus.
+
+## Product Thesis
+
+Cara memandang project ini:
+
+- ini adalah `commerce core`
+- setiap toko baru seharusnya cukup mengganti UI, branding, copy, media, dan kadang sedikit aturan bisnis
+- flow inti seperti auth, catalog, cart, checkout, order, payment review, promotion, dan inventory tidak boleh ditulis ulang dari nol setiap ada client baru
+
+Target akhirnya bukan "satu storefront jadi", tetapi:
+
+1. punya engine ecommerce yang reliable
+2. punya admin ops yang stabil
+3. punya contract yang enak dikonsumsi UI
+4. bisa membuat storefront baru dengan effort yang dominan di layer UI
+
+## Current Shape
+
+### Repo map
+
+| Path | Role |
 | --- | --- |
-| `app/` | Target Next.js App Router yang masih kosong/default |
-| `ecommercestarter/src/` | Source frontend Vite |
-| `ecommercestarter/backend/src/` | Source backend bergaya NestJS |
-| `ecommercestarter/backend/prisma/schema.prisma` | Model database utama |
-| `ecommercestarter/packages/contracts/src/` | Shared Zod schemas, envelopes, error codes |
-| `ecommercestarter/src/hooks/` | Hook data-access dan state utama |
-| `ecommercestarter/src/pages/` | Seluruh page React Router untuk storefront/admin/auth |
-| `ecommercestarter/src/layouts/` | Layout storefront dan admin |
-| `ecommercestarter/src/components/ui/` | Komponen shadcn/ui hasil generate |
+| `app/` | Next.js App Router pages dan route handlers |
+| `src/server/` | Server modules, domain logic, dan business flow |
+| `src/shared/contracts/` | Shared Zod contracts, error codes, envelope response |
+| `src/lib/` | Client request helpers, formatters, utility integration layer |
+| `src/hooks/` | Hook client yang masih relevan untuk UI interaktif |
+| `src/components/` | Presentational dan interactive components |
+| `prisma/` | Schema dan seed data |
+| `ecommercestarter/` | Legacy reference sementara |
 
-## Current Feature Inventory
+### Engine layers
 
-### Storefront
+#### 1. Presentation layer
 
-- Auth customer: register, login, logout, load current user.
-- Catalog browsing: list products, filter kategori, search, sort.
-- Product detail: variant picker, stock display, add to cart.
-- Cart: list item, update qty, remove item, clear cart.
-- Checkout: pilih alamat tersimpan atau input baru, voucher preview, shipping preview, place order.
-- Order history: list order, expand item detail, lihat payment status.
-- Payment proof upload: submit `filePath`/URL dan note.
-- Address book: CRUD address + default address handling.
+Di `app/` dan `src/components/`.
 
-### Admin
+Tugas layer ini:
 
-- Dashboard summary: orders today, last 7 days, pending payment, paid orders, low stock.
-- Categories: CRUD.
-- Products: create form ada, tetapi listing page masih placeholder dan edit flow belum jadi.
-- Orders: list, detail modal, update status.
-- Promotions: CRUD voucher/promotion.
-- Payments: review queue, confirm/reject proof.
-- Users: list registered users.
-- Inventory: manual stock adjustment, movement log, low stock list.
-- Audit log: list audit records.
-- Settings: edit store config key-value.
+- menampilkan storefront
+- menampilkan admin workspace
+- menghubungkan form/button/filter ke contract yang sudah ada
 
-## Frontend Architecture
+Layer ini seharusnya yang paling banyak berubah dari satu client ke client lain.
 
-### Entry and Providers
+#### 2. Engine layer
 
-- `src/main.tsx` merender `App`.
-- `src/App.tsx` memasang:
-  - `QueryClientProvider`
-  - `TooltipProvider`
-  - `Toaster` / `Sonner`
-  - `BrowserRouter`
-  - `AuthProvider`
+Di `src/server/`.
 
-### Route Map
+Ini adalah inti reusable system. Di sini berada:
 
-| Source route | Tujuan |
-| --- | --- |
-| `/login` | Login page |
-| `/register` | Register page |
-| `/` | Storefront home |
-| `/products` | Product listing |
-| `/products/:slug` | Product detail |
-| `/cart` | Cart |
-| `/checkout` | Checkout |
-| `/orders` | My orders |
-| `/addresses` | Address book |
-| `/admin` | Admin dashboard |
-| `/admin/categories` | Category CRUD |
-| `/admin/products` | Product listing placeholder |
-| `/admin/products/new` | Product create |
-| `/admin/products/:id` | Mengarah ke form create yang sama, edit belum benar-benar diimplementasikan |
-| `/admin/orders` | Admin orders |
-| `/admin/promotions` | Admin promotions |
-| `/admin/payments` | Payment review |
-| `/admin/users` | User list |
-| `/admin/audit` | Audit log |
-| `/admin/inventory` | Inventory |
-| `/admin/settings` | Store settings |
+- auth
+- catalog
+- inventory
+- cart
+- checkout
+- orders
+- payments
+- promotions
+- store config
 
-### Layouts
+Layer ini seharusnya stabil dan tidak ikut berubah hanya karena UI client berbeda.
 
-- `StorefrontLayout`
-  - Header, nav, cart button, login/logout controls.
-  - Link ke `/categories` dan `/profile`, tetapi route/page untuk dua path itu belum ada.
-- `AdminLayout`
-  - Sidebar admin.
-  - Redirect ke `/login` bila user bukan admin.
+#### 3. Contract layer
 
-### Hook Inventory
+Di `src/shared/contracts/`.
 
-| Hook | Peran | Endpoint/API yang dipakai |
+Perannya:
+
+- menjaga request/response shape tetap konsisten
+- memastikan validation berada di satu boundary
+- membuat UI, route handlers, dan server modules bicara dengan schema yang sama
+
+#### 4. Data layer
+
+Di Prisma schema dan database.
+
+Perannya:
+
+- menyimpan entitas commerce
+- menjaga relasi domain
+- menjadi fondasi untuk order state, promotion usage, inventory movement, dan payment proof
+
+#### 5. Client integration layer
+
+Di `src/lib/*/client.ts` dan sebagian hook di `src/hooks/`.
+
+Ini adalah lapisan tipis yang menghubungkan UI ke engine:
+
+- fetch helper
+- mutation helper
+- cart hook
+- payment review request
+- promotion CRUD request
+
+Prinsipnya: jangan duplikasi business logic di hook. Hook cukup menjadi consumer dari engine.
+
+## Current Domain Coverage
+
+### Implemented now
+
+| Domain | Status | Notes |
 | --- | --- | --- |
-| `use-auth` | Auth context, profile bootstrap, login/register/logout | `/auth/login`, `/auth/register`, `/me` |
-| `use-cart` | Fetch cart, add/update/remove/clear item, guest token | `/cart`, `/cart/items`, `/cart/items/:itemId` |
-| `use-products` | Public/admin product query dan product mutation | `/products`, `/products/:slug`, `/admin/products` |
-| `use-orders` | Place order, my orders, admin orders, update status | `/orders/place`, `/orders/my`, `/admin/orders` |
-| `use-payments` | Payment instructions, upload proof, admin review queue | `/orders/:id/payment-instructions`, `/orders/:id/payment-proof`, `/admin/payments/...` |
-| `use-promotions` | Promotion CRUD, checkout preview, voucher validation | `/admin/promotions`, `/checkout/preview`, `/vouchers/validate` |
-| `use-categories` | Public/admin category query and CRUD | `/categories`, `/admin/categories` |
-| `use-inventory` | Stock movement list, low stock, adjust stock | `/admin/inventory/movements`, `/admin/inventory/low-stock`, `/admin/inventory/adjust` |
-| `use-addresses` | Address book CRUD | `/me/addresses` |
-| `use-mobile` | Responsive helper | browser-only media query |
-| `use-toast` | Toast state helper | local UI utility |
+| Auth | Implemented | Cookie/httpOnly session, login, register, logout, `me`, admin guard |
+| Catalog | Implemented baseline | Public list/detail, admin list, category CRUD sudah ada |
+| Inventory | Implemented baseline | Manual adjustment, movement list, low stock, reserve/consume/release tercatat |
+| Cart | Implemented | Guest cart token, add/update/remove/clear, merge ke user saat auth |
+| Checkout | Implemented baseline | Preview, voucher validation, shipping calc, idempotency, inline address |
+| Payments | Implemented baseline | Manual transfer mock, instructions, proof upload, admin review queue |
+| Orders | Implemented baseline | Place order, my orders, admin orders, reservation flow, payment sync |
+| Promotions | Implemented baseline | Admin CRUD, voucher validation, scope sync, usage tracking |
 
-### Frontend State Notes
+### Still pending or partial
 
-- Auth token disimpan di `localStorage` sebagai `auth_token`.
-- Guest cart identity disimpan di `localStorage` sebagai `guest_cart_token`.
-- Semua request lewat `src/lib/api-client.ts` berbasis `axios`.
-- Request interceptor:
-  - attach `Authorization: Bearer ...` bila login.
-  - attach `X-Guest-Token` bila tidak login.
-- Data fetching dominan memakai React Query.
+| Domain | Status | Notes |
+| --- | --- | --- |
+| Settings | Pending | Admin settings page dan bulk update belum selesai |
+| Audit | Pending | Audit list page belum selesai walau audit record sebagian sudah dibuat |
+| Addresses | Partial | Saved address flow belum dimigrasikan penuh |
+| Admin dashboard | Pending | Summary dashboard belum dimigrasikan |
+| Users admin | Pending | User list/admin management belum dimigrasikan |
+| Product create/edit | Partial | Catalog list sudah ada, create/edit/variant management belum selesai |
+| `FREE_PRODUCT` promotions | Pending | Masih tercatat sebagai gap logic |
 
-### Styling Notes
+## Current Route Surface
 
-- Source UI memakai shadcn/ui dengan `components.json` mode `rsc: false`.
-- Styling lama masih Tailwind 3 + `@tailwind base/components/utilities`.
-- Root Next app memakai Tailwind 4 syntax `@import "tailwindcss"`.
-- Design token lama ada di `ecommercestarter/src/index.css` dan perlu dipindahkan manual saat migrasi.
+### Storefront routes
 
-## Backend Architecture
+- `/`
+- `/products`
+- `/products/[slug]`
+- `/cart`
+- `/checkout`
+- `/orders`
+- `/orders/[orderId]`
+- `/login`
+- `/register`
 
-### Module Inventory
+### Admin routes
 
-| Module | Tanggung jawab utama |
-| --- | --- |
-| `auth` | Register, login, JWT validation |
-| `users` | `me`, update profile, admin users |
-| `categories` | Public/admin category CRUD |
-| `products` | Public/admin product query, create/update/delete, variant sub-routes |
-| `cart` | Active cart lookup/create, cart items |
-| `orders` | Checkout preview, place order, my orders, admin orders, order status update |
-| `payments` | Upload payment proof, payment instructions, review queue |
-| `promotions` | Promotion CRUD, voucher validation |
-| `addresses` | Address CRUD per user |
-| `inventory` | Manual stock adjustment, movement log, low stock |
-| `store-config` | Key-value settings |
-| `dashboard` | Admin summary metrics |
-| `audit` | Audit log list |
+- `/admin`
+- `/admin/catalog`
+- `/admin/inventory`
+- `/admin/orders`
+- `/admin/orders/[orderId]`
+- `/admin/payments`
+- `/admin/promotions`
+- `/admin/settings`
+- `/admin/audit`
 
-### Infrastructure Layer
+### API boundaries already active
 
-- Prisma service untuk DB access.
-- Global exception filter yang membungkus error ke envelope `{ success, data, meta, error }`.
-- `AuthGuard` dan `RolesGuard`.
-- `ZodValidationPipe`.
-- Logger middleware dengan `X-Request-Id`.
-- Decorator `@CurrentUser()` dan `@Roles()`.
+- auth routes
+- catalog routes
+- cart routes
+- checkout preview
+- orders routes
+- payment instructions/proof/review routes
+- promotion CRUD and voucher validation routes
+- inventory routes
 
-### Domain Helpers
+## Core Engine Modules
 
-| Helper | Peran |
-| --- | --- |
-| `getEffectivePrice` | Prioritas `variant.priceOverride` -> `product.promoPrice` -> `product.basePrice` |
-| `isValidStatusTransition` | Aturan transisi status order |
-| `checkStockAvailability` | Hitung stok tersedia sesudah reservation |
-| `calculateShipping` | Flat shipping + free shipping threshold/voucher |
-| `isPromotionEligible` | Aktif/tanggal/usage limit |
-| `calculateDiscount` | Discount amount untuk percentage/fixed |
+### Auth
 
-### Shared Contracts
+Current responsibilities:
 
-Contracts memakai Zod untuk:
+- register
+- login
+- logout
+- resolve current session
+- admin authorization
 
-- auth: register, login, update profile
-- cart: add item, update qty
-- products: query params, create/update product
-- categories: create/update category
-- orders: place order, update status
-- promotions: create/update promotion, validate voucher
-- payments: review payment, upload payment proof
-- addresses: create/update address
-- store config: bulk upsert config
-- envelope: pagination + success/error response
+Why it matters for reuse:
 
-## Data Model Summary
+- UI toko manapun tetap butuh auth boundary yang sama
+- admin pages harus memakai server guard yang sama
+- session storage yang SSR-friendly lebih reusable daripada bearer token di localStorage
 
-Model utama di Prisma:
+### Catalog
 
-- `User`
-- `Address`
-- `Category`
-- `Product`
-- `ProductOptionDefinition`
-- `ProductOptionValue`
-- `ProductVariant`
-- `VariantOptionCombination`
-- `Cart`
-- `CartItem`
-- `Promotion`
-- `PromotionScope`
-- `PromotionUsage`
-- `Order`
-- `OrderItem`
-- `Payment`
-- `PaymentProof`
-- `StockReservation`
-- `StockMovement`
-- `AuditLog`
-- `StoreConfig`
+Current responsibilities:
 
-Enum penting:
+- categories
+- product listing
+- product detail
+- admin catalog visibility
 
-- `UserRole`: `CUSTOMER`, `ADMIN`
-- `OrderStatus`: `PENDING_PAYMENT`, `PAYMENT_REVIEW`, `PAID`, `PROCESSING`, `SHIPPED`, `COMPLETED`, `CANCELLED`
-- `PaymentStatus`: `PENDING`, `SUBMITTED`, `UNDER_REVIEW`, `CONFIRMED`, `REJECTED`
-- `DiscountType`: `PERCENTAGE`, `FIXED_AMOUNT`, `FREE_PRODUCT`, `FREE_SHIPPING`
+Reusable value:
 
-## Current End-to-End Flows
+- kebanyakan toko tetap punya konsep category, product, variant, price, stock
+- perbedaan antar client biasanya lebih ke presentasi produk, bukan contract data dasarnya
 
-### 1. Auth
+### Inventory
 
-1. User register/login dari page auth.
-2. Backend return `{ user, token }`.
-3. Frontend simpan token ke `localStorage`.
-4. Saat app mount, `AuthProvider` memanggil `/me`.
-5. Role `ADMIN` dipakai untuk akses layout admin.
+Current responsibilities:
 
-### 2. Browse Product to Cart
+- stock adjustment
+- low stock monitoring
+- stock movement log
+- reservation consume/release tracking
 
-1. User browse `/products` dengan search, category, sort.
-2. User buka `/products/:slug`.
-3. Variant dipilih dari kombinasi option values.
-4. `useCart` memastikan `guest_cart_token` tersedia.
-5. Item ditambahkan ke cart via `/cart/items`.
+Reusable value:
 
-### 3. Checkout Preview
+- inventory adalah domain operasional, bukan domain visual
+- ini justru tipe logic yang harus dibangun sekali dan dipakai berulang
 
-1. Checkout mengambil cart aktif.
-2. Jika login, page juga mengambil saved addresses.
-3. Voucher codes di-preview lewat `/checkout/preview`.
-4. Backend preview menghitung:
-   - subtotal
-   - product discount dari promo price
-   - voucher discount
-   - shipping cost
-   - grand total
+### Cart
 
-### 4. Place Order
+Current responsibilities:
 
-1. Frontend generate `Idempotency-Key`.
-2. Backend ambil cart aktif user.
-3. Backend validasi produk/variant aktif.
-4. Backend cek stok dengan mempertimbangkan active reservations.
-5. Backend buat order + order items.
-6. Backend buat `StockReservation`.
-7. Backend buat `Payment` status `PENDING`.
-8. Cart diubah ke `CONVERTED`.
+- active cart lookup
+- guest identity handling
+- add/update/remove/clear item
+- validate stock and product activity
 
-### 5. Payment Proof and Admin Review
+Reusable value:
 
-1. Customer melihat payment instructions.
-2. Customer upload proof (`filePath`, `note`).
-3. Backend membuat `PaymentProof`, lalu `Payment.status = SUBMITTED`.
-4. Admin melihat review queue.
-5. Admin confirm/reject payment.
+- hampir semua toko butuh pola cart yang sama
+- UI boleh berbeda, tetapi perilaku cart tidak boleh acak per project
 
-### 6. Admin Operations
+### Checkout
 
-- Categories CRUD.
-- Promotion CRUD.
-- Order detail dan update status.
-- Inventory manual adjustment dan movement log.
-- Dashboard summary.
-- Settings edit.
+Current responsibilities:
 
-## High-Risk Gaps Found During Audit
+- preview total
+- voucher application
+- shipping calculation
+- idempotency
+- bridge ke order placement
 
-### Build and Workspace
+Reusable value:
 
-- Backend NestJS belum punya package/workspace sendiri dan dependency NestJS tidak ada di source package.
-- Shared import `@packages/contracts` menunjukkan niat monorepo, tetapi workspace wiring-nya belum ada.
-- Root Next build ikut men-typecheck `ecommercestarter/backend/**` sehingga build root sudah gagal sebelum migrasi jalan.
+- formula checkout harus jadi source of truth lintas UI
+- jangan sampai tiap storefront punya hitung total sendiri
 
-### Auth and Request Context
+### Orders
 
-- `AuthMiddleware` ada, tetapi tidak pernah diregistrasikan ke module mana pun.
-- Karena middleware auth tidak terpasang, `req.user` berpotensi selalu kosong dan guarded endpoint tidak akan bekerja benar.
+Current responsibilities:
 
-### Checkout and Guest Flow
+- place order
+- snapshot order item/address/customer
+- reserve stock
+- sync payment state
+- my orders
+- admin orders
 
-- Cart mendukung guest token, tetapi checkout preview dan place order diwajibkan login.
-- Config `ALLOW_GUEST_CHECKOUT` ada, tetapi belum dipakai dalam flow.
-- Storefront seolah mendukung guest cart, tetapi belum mendukung guest checkout end-to-end.
+Reusable value:
 
-### Order, Payment, and Promotion Consistency
+- order lifecycle adalah jantung engine
+- ini bukan sesuatu yang seharusnya dirombak ulang untuk setiap client
 
-- `CheckoutPreviewService` menghitung voucher/shipping, tetapi `OrdersService.placeOrder` mengabaikan voucher codes dan tidak menyimpan `productDiscountTotal` / `voucherDiscountTotal`.
-- Upload proof mengubah `Payment.status` menjadi `SUBMITTED`, tetapi tidak mengubah `Order.status` ke `PAYMENT_REVIEW`.
-- Review payment mengubah `Payment.status`, tetapi tidak mengubah `Order.status` ke `PAID` atau `PENDING_PAYMENT`.
-- Promotion usage belum tercatat saat order berhasil; `PromotionUsage` dan `totalUsed` belum diupdate.
-- Update promotion tidak mengelola `scopes`, jadi edit scope tidak benar-benar diterapkan.
+### Payments
 
-### Product and Inventory
+Current responsibilities:
 
-- Service product memakai `tx.variantOptionValue.create`, padahal schema model-nya `VariantOptionCombination`; ini indikasi bug implementasi.
-- Product update belum menangani sinkronisasi option definitions dan variants.
-- Admin product list page masih placeholder.
-- Route edit product sudah ada, tetapi form edit belum diimplementasikan.
-- `useAdjustStock` meng-invalidate query key `['admin-products']`, padahal hook product admin memakai key `['admin', 'products', ...]`.
+- payment instructions
+- payment proof upload
+- admin review queue
+- confirm/reject manual transfer
+- sync payment status ke order status
 
-### Schema and Domain Issues
+Reusable value:
 
-- `AuditLog.entityId` direlasikan ke `Order.id`, padahal audit juga dipakai untuk `PAYMENT`, `PRODUCT`, `PROMOTION`; desain ini berisiko salah secara schema/data integrity.
-- Default store config punya method `seedDefaults()`, tetapi belum terlihat dipanggil.
-- Payment proof masih berupa string `filePath`; belum ada file upload strategy yang nyata.
+- saat ini mock/manual transfer dulu
+- nanti provider seperti Xendit bisa masuk sebagai adapter di atas contract yang sudah stabil
 
-### UX / Route Completeness
+### Promotions
 
-- `StorefrontLayout` punya link ke `/categories` dan `/profile`, tetapi route/page belum ada.
-- `src/pages/Index.tsx` ada, tetapi tidak dipakai router.
-- Test coverage praktis belum ada; hanya sample Vitest yang selalu pass.
+Current responsibilities:
 
-## Recommended Next.js Target Shape
+- promotion CRUD
+- scope targeting
+- voucher validation
+- usage tracking
+- stacking/max voucher rules
 
-### Suggested Architecture
+Reusable value:
 
-- Gunakan App Router sebagai satu-satunya frontend/backend shell.
-- Simpan server logic ke `src/server/` atau `lib/server/`.
-- Gunakan Prisma langsung dari Next server layer.
-- Pertahankan Zod contracts sebagai shared module internal.
-- Gunakan Route Handlers untuk HTTP boundary yang masih dibutuhkan.
-- Gunakan Server Components untuk query-heavy page yang mostly read-only.
-- Gunakan Client Components untuk:
-  - auth forms
-  - cart interactions
-  - voucher input
-  - modal/dialog admin
-  - payment proof form
+- promo adalah domain rules
+- UI hanya perlu form dan display
+- rules eligibility harus tetap satu sumber kebenaran
 
-### Suggested Route Mapping
+## Business Flows That Define The Engine
 
-| Existing | Next App Router target |
-| --- | --- |
-| `/` | `app/(storefront)/page.tsx` |
-| `/products` | `app/(storefront)/products/page.tsx` |
-| `/products/:slug` | `app/(storefront)/products/[slug]/page.tsx` |
-| `/cart` | `app/(storefront)/cart/page.tsx` |
-| `/checkout` | `app/(storefront)/checkout/page.tsx` |
-| `/orders` | `app/(storefront)/orders/page.tsx` |
-| `/addresses` | `app/(storefront)/addresses/page.tsx` |
-| `/login` | `app/(auth)/login/page.tsx` |
-| `/register` | `app/(auth)/register/page.tsx` |
-| `/admin` | `app/admin/page.tsx` |
-| `/admin/categories` | `app/admin/categories/page.tsx` |
-| `/admin/products` | `app/admin/products/page.tsx` |
-| `/admin/products/new` | `app/admin/products/new/page.tsx` |
-| `/admin/products/:id` | `app/admin/products/[id]/page.tsx` |
-| `/admin/orders` | `app/admin/orders/page.tsx` |
-| `/admin/promotions` | `app/admin/promotions/page.tsx` |
-| `/admin/payments` | `app/admin/payments/page.tsx` |
-| `/admin/users` | `app/admin/users/page.tsx` |
-| `/admin/audit` | `app/admin/audit/page.tsx` |
-| `/admin/inventory` | `app/admin/inventory/page.tsx` |
-| `/admin/settings` | `app/admin/settings/page.tsx` |
+### 1. Browse to cart
 
-### Migration Principle
+1. customer membuka product listing
+2. customer memilih variant di product detail
+3. item ditambahkan ke active cart
+4. engine memvalidasi product/variant aktif dan stok tersedia
 
-- Pindahkan business rules dulu, bukan sekadar UI.
-- Samakan perhitungan preview dan perhitungan final order.
-- Rapikan auth/session model lebih dulu sebelum mem-port halaman admin.
-- Perlakukan `ecommercestarter` sebagai source reference, bukan code yang bisa langsung dipindahkan mentah.
+### 2. Checkout preview
 
-## What Should Be Preserved
+1. checkout membaca active cart
+2. engine menghitung subtotal
+3. engine menghitung product discount
+4. engine memvalidasi voucher
+5. engine menghitung shipping
+6. engine mengembalikan grand total final preview
 
-- Struktur domain: catalog, cart, promotion, order, payment, inventory, audit, config.
-- Shared contract mindset: Zod schema sebagai boundary tunggal.
-- Order idempotency.
-- Stock reservation model.
-- Manual transfer payment review flow.
-- Design tokens dan komponen UI reuse yang memang dipakai.
+### 3. Place order
 
-## What Should Change in Migration
+1. UI mengirim checkout intent dengan idempotency key
+2. engine membangun quote final dengan formula yang sama seperti preview
+3. engine membuat order dan order items
+4. engine membuat stock reservation
+5. engine membuat payment record
+6. engine menandai cart sebagai converted
 
-- React Router -> Next App Router.
-- LocalStorage bearer auth -> server-friendly session strategy, idealnya cookie/httpOnly.
-- Vite axios client thinking -> kombinasi RSC, server actions, route handlers, dan fetch wrapper.
-- Tailwind 3 config -> Tailwind 4 setup yang cocok untuk Next.
-- Pseudo-monorepo lama -> struktur Next yang benar-benar runnable.
+### 4. Payment review
 
+1. customer membuka payment instructions
+2. customer upload payment proof
+3. order bergeser ke `PAYMENT_REVIEW`
+4. admin mereview proof
+5. confirm akan menggeser order ke `PAID`
+6. reject akan mengembalikan order ke status yang tepat
+
+### 5. Promotion usage
+
+1. voucher divalidasi terhadap scope dan rules store
+2. order sukses membuat `PromotionUsage`
+3. `Promotion.totalUsed` ikut bertambah
+4. limit per-user dan total usage tetap bisa dienforce
+
+Flow-flow ini adalah inti dari engine. Selama flow ini stabil, UI baru bisa dibangun jauh lebih cepat.
+
+## Functions, Hooks, And How To Think About Them
+
+Kalau memakai sudut pandang "functions dan hooks sudah siap", itu benar, tetapi perlu framing yang tepat.
+
+Yang sebaiknya dianggap sebagai source of truth:
+
+- server modules
+- domain helpers
+- shared contracts
+- persistence model
+- route/API boundaries
+
+Yang sebaiknya dianggap sebagai adapter UI:
+
+- client request helpers
+- hooks
+- form state handlers
+- page components
+
+Contoh adapter UI yang sekarang sudah ada:
+
+- `src/hooks/use-cart.ts`
+- `src/lib/checkout/client.ts`
+- `src/lib/orders/client.ts`
+- `src/lib/payments/client.ts`
+- `src/lib/promotions/client.ts`
+
+Artinya:
+
+- kita memang sedang menyiapkan function dan hook untuk dipakai UI
+- tetapi kita tidak boleh menganggap hook sebagai inti engine
+- inti engine tetap ada di layer server, contract, dan state model
+
+## What Should Stay Stable Across Client Projects
+
+- Prisma schema dan entitas inti commerce
+- Zod contracts
+- auth/session model
+- cart behavior
+- checkout formula
+- order placement flow
+- payment review state machine
+- promotion eligibility logic
+- inventory reservation/movement
+- admin operational modules
+
+Kalau bagian-bagian ini stabil, kita tidak perlu membangun ulang backend commerce setiap datang project baru.
+
+## What Should Change Per Client
+
+- brand identity
+- color system
+- typography
+- layout
+- homepage composition
+- category landing pages
+- product storytelling
+- marketing sections
+- copywriting
+- media asset
+- kadang checkout UX detail
+
+Dengan kata lain:
+
+- engine tetap
+- theme dan presentation berubah
+
+## Practical Reuse Model
+
+Kalau nanti ada project toko baru, pendekatan idealnya:
+
+1. clone engine ini sebagai baseline
+2. tentukan visual system dan brand layer
+3. buat storefront pages yang sesuai brand
+4. sambungkan UI ke server modules / client adapters yang sudah tersedia
+5. ubah engine hanya jika memang ada aturan bisnis baru yang nyata
+
+Bukan pendekatan ideal:
+
+1. bikin project baru dari nol
+2. rewrite cart
+3. rewrite checkout
+4. rewrite order flow
+5. rewrite payment review
+
+Itu akan menghabiskan waktu di tempat yang salah.
+
+## Current Technical Risks And Open Gaps
+
+Yang masih perlu dibereskan agar engine ini benar-benar matang:
+
+- admin settings
+- admin audit
+- addresses flow penuh
+- admin dashboard
+- users admin page
+- product create/edit/variant flow
+- keputusan final soal guest checkout
+- support `FREE_PRODUCT`
+- testing yang bernilai
+- removal final terhadap `ecommercestarter/`
+
+Jadi project ini sudah cukup jelas sebagai engine, tetapi belum final-complete.
+
+## Recommended Mental Model
+
+Kalimat paling ringkas untuk memandang project ini:
+
+> bangun commerce engine sekali, lalu pakai berulang untuk banyak storefront dengan fokus ulang di UI dan brand layer
+
+Kalau mental model ini dijaga, keputusan arsitektur berikutnya akan lebih konsisten:
+
+- business logic masuk engine
+- UI tidak mengulang logic
+- contract jadi boundary utama
+- per-client work fokus ke presentation dan kebutuhan khusus
