@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ProductAddToCartCard } from "@/components/storefront/product-add-to-cart-card";
 import { formatCurrency } from "@/lib/formatters";
 import { getPublicProductBySlug } from "@/server/catalog";
 import { AppError } from "@/server/http";
@@ -53,6 +54,20 @@ export default async function ProductDetailPage({
   const optionSummary = product.optionDefinitions.map((option) => ({
     ...option,
     values: option.values.map((value) => value.value),
+  }));
+  const cartVariants = product.variants.map((variant) => ({
+    id: variant.id,
+    label: variant.optionCombination.length
+      ? variant.optionCombination
+          .map(
+            (item) =>
+              `${item.optionValue.optionDefinition.name}: ${item.optionValue.value}`,
+          )
+          .join(", ")
+      : variant.sku || "Default variant",
+    sku: variant.sku,
+    unitPrice: variant.priceOverride ?? product.promoPrice ?? product.basePrice,
+    stockOnHand: variant.stockOnHand,
   }));
 
   return (
@@ -114,9 +129,7 @@ export default async function ProductDetailPage({
           <section className="rounded-[1.5rem] border border-border bg-background p-5">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold">Available Variants</h2>
-              <span className="text-sm text-muted">
-                Add to cart will be wired in the cart batch
-              </span>
+              <span className="text-sm text-muted">Select one below to add into the live cart</span>
             </div>
 
             <div className="mt-4 overflow-x-auto">
@@ -166,20 +179,11 @@ export default async function ProductDetailPage({
             </div>
           </section>
 
-          <div className="flex flex-wrap gap-3">
-            <button
-              disabled
-              className="cursor-not-allowed rounded-full bg-accent/60 px-5 py-3 text-sm font-medium text-white"
-            >
-              Cart integration next
-            </button>
-            <Link
-              href="/checkout"
-              className="rounded-full border border-border px-5 py-3 text-sm font-medium text-muted transition hover:text-foreground"
-            >
-              Review Checkout
-            </Link>
-          </div>
+          <ProductAddToCartCard
+            productId={product.id}
+            productName={product.name}
+            variants={cartVariants}
+          />
         </div>
       </section>
     </main>

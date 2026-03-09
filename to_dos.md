@@ -223,7 +223,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Migrasikan homepage.
 - [x] Migrasikan products list page.
 - [x] Migrasikan product detail page.
-- [ ] Migrasikan cart page.
+- [x] Migrasikan cart page.
 - [ ] Migrasikan checkout page.
 - [ ] Migrasikan orders page.
 - [ ] Migrasikan addresses page.
@@ -255,7 +255,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [ ] Ubah hook data-heavy menjadi server-driven bila memungkinkan.
 - [ ] Simpan hook client-only untuk form/dialog/local UI state.
 - [ ] Buat wrapper auth/session hook yang SSR-safe.
-- [ ] Buat cart hook baru yang tidak hard-coded pada `localStorage` saat render server.
+- [x] Buat cart hook baru yang tidak hard-coded pada `localStorage` saat render server.
 - [ ] Pastikan query invalidation key konsisten bila React Query tetap dipakai.
 
 ## 21. UI System and Design Tokens
