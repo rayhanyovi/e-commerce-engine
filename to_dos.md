@@ -210,7 +210,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 17. Dashboard and Audit
 
-- [ ] Port admin dashboard summary.
+- [x] Port admin dashboard summary.
 - [x] Port audit log list.
 - [x] Putuskan desain audit log final:
 - [x] generic polymorphic log
