@@ -6,6 +6,7 @@ import { toFlatSearchParams, type SearchParamInput } from "@/lib/search-params";
 import { toUserFacingErrorMessage } from "@/lib/user-facing-error";
 import {
   AUDIT_ACTOR_FILTERS,
+  AUDIT_CONTEXT_FILTERS,
   AUDIT_ENTITY_FILTERS,
   listAdminAuditLogs,
 } from "@/server/audit";
@@ -69,7 +70,7 @@ export default async function AdminAuditPage({
 
   const totalPages = Math.max(1, Math.ceil(result.total / query.pageSize));
   const hasActiveFilters = Boolean(
-    query.search || query.entityType || query.actorType || query.action,
+    query.search || query.entityType || query.contextType || query.actorType || query.action,
   );
   const entityTypesOnPage = new Set(result.logs.map((log) => log.entityType)).size;
   const adminActionsOnPage = result.logs.filter((log) => log.actorType === "ADMIN").length;
@@ -101,7 +102,7 @@ export default async function AdminAuditPage({
       </section>
 
       <section className="rounded-[1.5rem] border border-border bg-surface p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold">Audit Log Registry</h1>
             <p className="mt-2 max-w-3xl text-sm leading-7 text-muted">
@@ -118,7 +119,7 @@ export default async function AdminAuditPage({
           </Link>
         </div>
 
-        <form className="mt-5 grid gap-4 xl:grid-cols-[1.2fr_0.8fr_0.8fr_1fr_auto]">
+        <form className="mt-5 grid gap-4 xl:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_1fr_auto]">
           <input
             name="search"
             defaultValue={query.search ?? ""}
@@ -146,6 +147,18 @@ export default async function AdminAuditPage({
             {AUDIT_ACTOR_FILTERS.map((actorType) => (
               <option key={actorType} value={actorType}>
                 {actorType}
+              </option>
+            ))}
+          </select>
+          <select
+            name="contextType"
+            defaultValue={query.contextType ?? ""}
+            className="w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+          >
+            <option value="">All contexts</option>
+            {AUDIT_CONTEXT_FILTERS.map((contextType) => (
+              <option key={contextType} value={contextType}>
+                {contextType}
               </option>
             ))}
           </select>
@@ -214,9 +227,14 @@ export default async function AdminAuditPage({
                   </div>
                   <div className="mt-3 grid gap-1 text-sm text-muted">
                     <p>Actor: {log.actorLabel}</p>
-                    <p>
-                      Entity: <span className="font-mono text-xs">{log.entityId}</span>
-                    </p>
+                    <p>Entity Type: {log.entityType}</p>
+                    <p>Entity Label: {log.entityLabel ?? "-"}</p>
+                    <p>Entity ID: <span className="font-mono text-xs">{log.entityId}</span></p>
+                    {log.contextType ? (
+                      <p>
+                        Context: {log.contextType} · {log.contextLabel ?? log.contextId ?? "-"}
+                      </p>
+                    ) : null}
                     <p>Recorded: {formatDateTime(log.createdAt)}</p>
                     {log.requestId ? <p>Request ID: {log.requestId}</p> : null}
                   </div>

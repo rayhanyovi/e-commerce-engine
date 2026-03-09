@@ -90,7 +90,9 @@ function serializeAuditEvent(
 ) {
   return {
     ...event,
-    actorLabel: event.actor
+    actorLabel: event.actorLabel
+      ? event.actorLabel
+      : event.actor
       ? `${event.actor.name} (${event.actor.role})`
       : event.actorType === "SYSTEM"
         ? "System"

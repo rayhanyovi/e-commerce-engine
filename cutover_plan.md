@@ -29,7 +29,6 @@ This document defines when `ecommercestarter/` is no longer needed in the active
 
 ## Current blockers before archive
 
-- Audit log schema cleanup is still open.
 - `FREE_PRODUCT` promotion support is still open.
 
 ## Archive action
@@ -48,4 +47,5 @@ As of 2026-03-10:
 - parity documentation exists
 - automated verification is available
 - manual QA checklist has been executed and signed off via `npm run test:qa`
+- audit log schema has been normalized with typed entity/context fields and request trace support
 - `ecommercestarter/` should still stay as temporary reference until the remaining blockers are closed

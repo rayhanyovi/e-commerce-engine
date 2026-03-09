@@ -7,6 +7,7 @@ import {
   type UploadPaymentProofDto,
 } from "@/shared/contracts";
 import type { AuthRole } from "@/server/auth/types";
+import { writeAuditLog } from "@/server/audit";
 import { prisma } from "@/server/db";
 import { AppError } from "@/server/http";
 import { updateOrderStatus } from "@/server/orders";
@@ -141,6 +142,7 @@ export async function uploadPaymentProof(
       },
       select: {
         id: true,
+        orderNumber: true,
         status: true,
         payments: {
           orderBy: {
@@ -211,24 +213,32 @@ export async function uploadPaymentProof(
       });
     }
 
-    await tx.auditLog.create({
-      data: {
-        actorType: "CUSTOMER",
-        actorId: actor.id,
-        entityType: "PAYMENT",
-        entityId: payment.id,
-        action: "PAYMENT_PROOF_UPLOADED",
-        beforeJson: {
-          paymentStatus: payment.status,
-          orderStatus: order.status,
-        },
-        afterJson: {
-          paymentStatus: "SUBMITTED",
-          orderStatus: "PAYMENT_REVIEW",
-          proofId: proof.id,
-          filePath: proof.filePath,
-          fileName: proof.fileName,
-        },
+    await writeAuditLog(tx, {
+      actor: {
+        type: "CUSTOMER",
+        id: actor.id,
+      },
+      entity: {
+        type: "PAYMENT",
+        id: payment.id,
+        label: `Payment ${payment.id}`,
+      },
+      context: {
+        type: "ORDER",
+        id: order.id,
+        label: order.orderNumber,
+      },
+      action: "PAYMENT_PROOF_UPLOADED",
+      before: {
+        paymentStatus: payment.status,
+        orderStatus: order.status,
+      },
+      after: {
+        paymentStatus: "SUBMITTED",
+        orderStatus: "PAYMENT_REVIEW",
+        proofId: proof.id,
+        filePath: proof.filePath,
+        fileName: proof.fileName,
       },
     });
 
@@ -300,6 +310,7 @@ export async function reviewPayment(
       order: {
         select: {
           id: true,
+          orderNumber: true,
           status: true,
         },
       },
@@ -394,22 +405,30 @@ export async function reviewPayment(
     });
   }
 
-  await prisma.auditLog.create({
-    data: {
-      actorType: "ADMIN",
-      actorId: adminId,
-      entityType: "PAYMENT",
-      entityId: paymentId,
-      action: dto.decision === "CONFIRMED" ? "PAYMENT_CONFIRMED" : "PAYMENT_REJECTED",
-      beforeJson: {
-        paymentStatus: payment.status,
-        orderStatus: payment.order.status,
-      },
-      afterJson: {
-        paymentStatus: dto.decision === "CONFIRMED" ? "CONFIRMED" : "REJECTED",
-        orderStatus: currentOrderStatus,
-        note: dto.note ?? null,
-      },
+  await writeAuditLog(prisma, {
+    actor: {
+      type: "ADMIN",
+      id: adminId,
+    },
+    entity: {
+      type: "PAYMENT",
+      id: paymentId,
+      label: `Payment ${paymentId}`,
+    },
+    context: {
+      type: "ORDER",
+      id: payment.order.id,
+      label: payment.order.orderNumber,
+    },
+    action: dto.decision === "CONFIRMED" ? "PAYMENT_CONFIRMED" : "PAYMENT_REJECTED",
+    before: {
+      paymentStatus: payment.status,
+      orderStatus: payment.order.status,
+    },
+    after: {
+      paymentStatus: dto.decision === "CONFIRMED" ? "CONFIRMED" : "REJECTED",
+      orderStatus: currentOrderStatus,
+      note: dto.note ?? null,
     },
   });
 

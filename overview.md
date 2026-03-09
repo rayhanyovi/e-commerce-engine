@@ -157,7 +157,7 @@ UI system yang aktif juga sudah disederhanakan:
 | Orders | Implemented baseline | Place order, my orders, admin orders, reservation flow, payment sync |
 | Promotions | Implemented baseline | Admin CRUD, voucher validation, scope sync, usage tracking |
 | Settings | Implemented | Admin settings list, bulk update, default initialization path |
-| Audit | Implemented baseline | Generic audit log, admin list, important domain change coverage |
+| Audit | Implemented | Typed generic audit log, admin list, entity/context filters, request trace, and important domain change coverage |
 | Addresses | Implemented | Saved address CRUD dan checkout address selection sudah aktif |
 | Admin dashboard | Implemented | Summary dashboard route dan API sudah aktif |
 | Users admin | Implemented | Admin user list sudah aktif |
@@ -166,7 +166,6 @@ UI system yang aktif juga sudah disederhanakan:
 
 | Domain | Status | Notes |
 | --- | --- | --- |
-| Audit schema cleanup | Pending | Generic audit log sudah jalan, tapi desain akhir masih ditinjau |
 | UI consistency pass | Pending | Final consistency pass untuk admin dan storefront masih terbuka |
 | `FREE_PRODUCT` promotions | Pending | Masih tercatat sebagai gap logic |
 
@@ -475,7 +474,6 @@ Yang masih perlu dibereskan agar engine ini benar-benar matang:
 
 - support `FREE_PRODUCT`
 - design consistency pass
-- audit schema cleanup
 - removal final terhadap `ecommercestarter/`
 
 Jadi project ini sudah cukup jelas sebagai engine, tetapi belum final-complete.

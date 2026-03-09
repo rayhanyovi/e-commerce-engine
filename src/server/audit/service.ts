@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import {
   type AuditLogListQuery,
   type AuditActorType,
+  type AuditContextType,
   type AuditEntityType,
 } from "@/shared/contracts";
 import { prisma } from "@/server/db";
@@ -57,7 +58,9 @@ function summarizeJsonValue(value: Prisma.JsonValue | null) {
 function serializeAuditLog(record: AuditLogRecord) {
   return {
     ...record,
-    actorLabel: record.actor
+    actorLabel: record.actorLabel
+      ? record.actorLabel
+      : record.actor
       ? `${record.actor.name} (${record.actor.role})`
       : record.actorId
         ? `Unknown actor ${record.actorId}`
@@ -83,6 +86,10 @@ function buildAuditWhere(query: AuditLogListQuery): Prisma.AuditLogWhereInput {
     where.entityType = query.entityType;
   }
 
+  if (query.contextType) {
+    where.contextType = query.contextType;
+  }
+
   if (query.action) {
     where.action = {
       contains: query.action,
@@ -94,6 +101,24 @@ function buildAuditWhere(query: AuditLogListQuery): Prisma.AuditLogWhereInput {
     where.OR = [
       {
         entityId: {
+          contains: query.search,
+          mode: "insensitive",
+        },
+      },
+      {
+        entityLabel: {
+          contains: query.search,
+          mode: "insensitive",
+        },
+      },
+      {
+        contextId: {
+          contains: query.search,
+          mode: "insensitive",
+        },
+      },
+      {
+        contextLabel: {
           contains: query.search,
           mode: "insensitive",
         },
@@ -151,6 +176,16 @@ export const AUDIT_ENTITY_FILTERS: AuditEntityType[] = [
 ];
 
 export const AUDIT_ACTOR_FILTERS: AuditActorType[] = ["ADMIN", "SYSTEM", "CUSTOMER"];
+
+export const AUDIT_CONTEXT_FILTERS: AuditContextType[] = [
+  "ORDER",
+  "PAYMENT",
+  "PRODUCT",
+  "PRODUCT_VARIANT",
+  "STORE_CONFIG",
+  "PROMOTION",
+  "USER",
+];
 
 export async function listAdminAuditLogs(query: AuditLogListQuery) {
   const where = buildAuditWhere(query);

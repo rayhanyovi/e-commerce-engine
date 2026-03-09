@@ -325,5 +325,5 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Selesaikan admin products page yang masih placeholder.
 - [x] Selesaikan broken nav links `/categories` dan `/profile`.
 - [x] Selesaikan seed default config yang belum terpakai.
-- [ ] Selesaikan audit log schema design yang masih problematik.
+- [x] Selesaikan audit log schema design yang masih problematik.
 - [x] Selesaikan build root yang gagal karena source lama ikut ter-compile.

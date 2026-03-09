@@ -12,6 +12,7 @@ import { buildCheckoutQuote } from "@/server/checkout";
 import { prisma } from "@/server/db";
 import { isValidStatusTransition } from "@/server/domain";
 import { AppError } from "@/server/http";
+import { writeAuditLog } from "@/server/audit";
 
 type DbClient = Prisma.TransactionClient | typeof prisma;
 
@@ -446,6 +447,7 @@ export async function placeOrder(
   }
 
   const createdOrderId = await prisma.$transaction(async (tx) => {
+    const orderNumber = createOrderNumber();
     const quote = await buildCheckoutQuote(
       {
         userId,
@@ -460,7 +462,7 @@ export async function placeOrder(
     const customerSnapshot = await getUserCustomerSnapshot(tx, userId);
     const order = await tx.order.create({
       data: {
-        orderNumber: createOrderNumber(),
+        orderNumber,
         userId,
         addressId: shippingAddress.addressId,
         customerSnapshot,
@@ -559,17 +561,22 @@ export async function placeOrder(
       },
     });
 
-    await tx.auditLog.create({
-      data: {
-        actorType: "CUSTOMER",
-        actorId: userId,
-        entityType: "ORDER",
-        entityId: order.id,
-        action: "ORDER_PLACED",
-        afterJson: {
-          orderId: order.id,
-          grandTotal: quote.preview.grandTotal,
-        },
+    await writeAuditLog(tx, {
+      actor: {
+        type: "CUSTOMER",
+        id: userId,
+        label: `${customerSnapshot.name} (CUSTOMER)`,
+      },
+      entity: {
+        type: "ORDER",
+        id: order.id,
+        label: orderNumber,
+      },
+      action: "ORDER_PLACED",
+      after: {
+        orderId: order.id,
+        orderNumber,
+        grandTotal: quote.preview.grandTotal,
       },
     });
 
@@ -713,20 +720,23 @@ export async function updateOrderStatus(
       },
     });
 
-    await tx.auditLog.create({
-      data: {
-        actorType: "ADMIN",
-        actorId,
-        entityType: "ORDER",
-        entityId: orderId,
-        action: "ORDER_STATUS_CHANGED",
-        beforeJson: {
-          status: order.status,
-        },
-        afterJson: {
-          status: dto.status,
-          note: dto.note ?? null,
-        },
+    await writeAuditLog(tx, {
+      actor: {
+        type: "ADMIN",
+        id: actorId,
+      },
+      entity: {
+        type: "ORDER",
+        id: orderId,
+        label: order.orderNumber ?? order.id,
+      },
+      action: "ORDER_STATUS_CHANGED",
+      before: {
+        status: order.status,
+      },
+      after: {
+        status: dto.status,
+        note: dto.note ?? null,
       },
     });
 

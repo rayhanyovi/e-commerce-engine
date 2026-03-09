@@ -67,6 +67,24 @@ enum AuditActorType {
   CUSTOMER
 }
 
+enum AuditEntityType {
+  ORDER
+  PAYMENT
+  PROMOTION
+  INVENTORY
+  STORE_CONFIG
+}
+
+enum AuditContextType {
+  ORDER
+  PAYMENT
+  PRODUCT
+  PRODUCT_VARIANT
+  STORE_CONFIG
+  PROMOTION
+  USER
+}
+
 enum StockMovementType {
   ADJUSTMENT_IN
   ADJUSTMENT_OUT
@@ -384,22 +402,30 @@ model StockReservation {
 }
 
 model AuditLog {
-  id         String         @id @default(cuid())
-  actorType  AuditActorType
-  actorId    String?
-  entityType String
-  entityId   String
-  action     String
-  beforeJson Json?
-  afterJson  Json?
-  metadata   Json?
-  requestId  String?
-  createdAt  DateTime       @default(now())
+  id           String           @id @default(cuid())
+  actorType    AuditActorType
+  actorId      String?
+  actorLabel   String?
+  entityType   AuditEntityType
+  entityId     String
+  entityLabel  String?
+  contextType  AuditContextType?
+  contextId    String?
+  contextLabel String?
+  action       String
+  beforeJson   Json?
+  afterJson    Json?
+  metadata     Json?
+  requestId    String?
+  createdAt    DateTime         @default(now())
 
   actor User? @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
 
   @@index([entityType, entityId, createdAt])
+  @@index([contextType, contextId, createdAt])
   @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@index([requestId])
 }
 
 model StockMovement {

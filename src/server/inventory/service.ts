@@ -7,6 +7,7 @@ import {
   type LowStockQuery,
   type StockMovementsQuery,
 } from "@/shared/contracts";
+import { writeAuditLog } from "@/server/audit";
 import { prisma } from "@/server/db";
 import { AppError } from "@/server/http";
 
@@ -133,29 +134,38 @@ export async function adjustStock(dto: AdjustStockDto, actorId: string) {
       },
     });
 
-    await tx.auditLog.create({
-      data: {
-        actorType: "ADMIN",
-        actorId,
-        entityType: "INVENTORY",
-        entityId: createdMovement.id,
-        action: "INVENTORY_ADJUSTED",
-        beforeJson: {
-          productVariantId: dto.productVariantId,
-          stockOnHand: variant.stockOnHand,
-        },
-        afterJson: {
-          productVariantId: dto.productVariantId,
-          stockOnHand: updated.stockOnHand,
-          qty: dto.qty,
-          movementType: type,
-          reason: dto.reason ?? null,
-        },
-        metadata: {
-          productId: variant.product.id,
-          productName: variant.product.name,
-          referenceId,
-        },
+    await writeAuditLog(tx, {
+      actor: {
+        type: "ADMIN",
+        id: actorId,
+      },
+      entity: {
+        type: "INVENTORY",
+        id: dto.productVariantId,
+        label: variant.product.name,
+      },
+      context: {
+        type: "PRODUCT_VARIANT",
+        id: dto.productVariantId,
+        label: variant.sku ?? dto.productVariantId,
+      },
+      action: "INVENTORY_ADJUSTED",
+      before: {
+        productVariantId: dto.productVariantId,
+        stockOnHand: variant.stockOnHand,
+      },
+      after: {
+        productVariantId: dto.productVariantId,
+        stockOnHand: updated.stockOnHand,
+        qty: dto.qty,
+        movementType: type,
+        reason: dto.reason ?? null,
+      },
+      metadata: {
+        movementId: createdMovement.id,
+        productId: variant.product.id,
+        productName: variant.product.name,
+        referenceId,
       },
     });
 

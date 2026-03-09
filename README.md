@@ -51,7 +51,6 @@ Implemented and active:
 Still open:
 
 - `FREE_PRODUCT` promotion support
-- audit log schema cleanup
 - final legacy cutover and archive of `ecommercestarter/`
 
 ## Architecture

@@ -17,6 +17,7 @@ import {
   getStoreConfigNumberValue,
   getStoreConfigSnapshot,
 } from "@/server/store-config";
+import { writeAuditLog } from "@/server/audit";
 
 type DbClient = Prisma.TransactionClient | typeof prisma;
 
@@ -440,18 +441,21 @@ export async function createPromotion(dto: CreatePromotionDto, actorId?: string)
     include: promotionInclude,
   });
 
-  await prisma.auditLog.create({
-    data: {
-      actorType: "ADMIN",
-      actorId: actorId ?? null,
-      entityType: "PROMOTION",
-      entityId: promotion.id,
-      action: "PROMOTION_CREATED",
-      afterJson: {
-        code: promotion.code,
-        type: promotion.type,
-        scopeCount: promotion.scopes.length,
-      },
+  await writeAuditLog(prisma, {
+    actor: {
+      type: "ADMIN",
+      id: actorId ?? null,
+    },
+    entity: {
+      type: "PROMOTION",
+      id: promotion.id,
+      label: promotion.code ?? promotion.id,
+    },
+    action: "PROMOTION_CREATED",
+    after: {
+      code: promotion.code,
+      type: promotion.type,
+      scopeCount: promotion.scopes.length,
     },
   });
 
@@ -529,23 +533,26 @@ export async function updatePromotion(
     });
   });
 
-  await prisma.auditLog.create({
-    data: {
-      actorType: "ADMIN",
-      actorId: actorId ?? null,
-      entityType: "PROMOTION",
-      entityId: promotion.id,
-      action: "PROMOTION_UPDATED",
-      beforeJson: {
-        code: existingPromotion.code,
-        type: existingPromotion.type,
-        scopeCount: existingPromotion.scopes.length,
-      },
-      afterJson: {
-        code: promotion.code,
-        type: promotion.type,
-        scopeCount: promotion.scopes.length,
-      },
+  await writeAuditLog(prisma, {
+    actor: {
+      type: "ADMIN",
+      id: actorId ?? null,
+    },
+    entity: {
+      type: "PROMOTION",
+      id: promotion.id,
+      label: promotion.code ?? promotion.id,
+    },
+    action: "PROMOTION_UPDATED",
+    before: {
+      code: existingPromotion.code,
+      type: existingPromotion.type,
+      scopeCount: existingPromotion.scopes.length,
+    },
+    after: {
+      code: promotion.code,
+      type: promotion.type,
+      scopeCount: promotion.scopes.length,
     },
   });
 
@@ -584,17 +591,20 @@ export async function deletePromotion(id: string, actorId?: string) {
     },
   });
 
-  await prisma.auditLog.create({
-    data: {
-      actorType: "ADMIN",
-      actorId: actorId ?? null,
-      entityType: "PROMOTION",
-      entityId: id,
-      action: "PROMOTION_DELETED",
-      beforeJson: {
-        code: promotion.code,
-        type: promotion.type,
-      },
+  await writeAuditLog(prisma, {
+    actor: {
+      type: "ADMIN",
+      id: actorId ?? null,
+    },
+    entity: {
+      type: "PROMOTION",
+      id,
+      label: promotion.code ?? id,
+    },
+    action: "PROMOTION_DELETED",
+    before: {
+      code: promotion.code,
+      type: promotion.type,
     },
   });
 

@@ -14,6 +14,7 @@ import {
   type StoreConfigInputKind,
   type StoreConfigSection,
 } from "@/server/store-config";
+import { writeAuditLog } from "@/server/audit";
 
 type SettingsDbClient = Prisma.TransactionClient | typeof prisma;
 
@@ -217,18 +218,21 @@ export async function initializeMissingStoreConfigs(actorId?: string) {
       });
 
       for (const config of missingConfigs) {
-        await tx.auditLog.create({
-          data: {
-            actorType: actorId ? "ADMIN" : "SYSTEM",
-            actorId: actorId ?? null,
-            entityType: "STORE_CONFIG",
-            entityId: config.key,
-            action: "STORE_CONFIG_INITIALIZED",
-            afterJson: {
-              key: config.key,
-              value: config.value,
-              label: config.label,
-            },
+        await writeAuditLog(tx, {
+          actor: {
+            type: actorId ? "ADMIN" : "SYSTEM",
+            id: actorId ?? null,
+          },
+          entity: {
+            type: "STORE_CONFIG",
+            id: config.key,
+            label: config.label ?? config.key,
+          },
+          action: "STORE_CONFIG_INITIALIZED",
+          after: {
+            key: config.key,
+            value: config.value,
+            label: config.label,
           },
         });
       }
@@ -297,25 +301,28 @@ export async function bulkUpdateStoreConfigs(
         },
       });
 
-      await tx.auditLog.create({
-        data: {
-          actorType: "ADMIN",
-          actorId: actorId ?? null,
-          entityType: "STORE_CONFIG",
-          entityId: key,
-          action: "STORE_CONFIG_UPDATED",
-          beforeJson: existing
-            ? {
-                key,
-                value: beforeValue,
-                label: beforeLabel ?? definition.label,
-              }
-            : undefined,
-          afterJson: {
-            key,
-            value: nextValue,
-            label: nextLabel,
-          },
+      await writeAuditLog(tx, {
+        actor: {
+          type: "ADMIN",
+          id: actorId ?? null,
+        },
+        entity: {
+          type: "STORE_CONFIG",
+          id: key,
+          label: nextLabel,
+        },
+        action: "STORE_CONFIG_UPDATED",
+        before: existing
+          ? {
+              key,
+              value: beforeValue,
+              label: beforeLabel ?? definition.label,
+            }
+          : null,
+        after: {
+          key,
+          value: nextValue,
+          label: nextLabel,
         },
       });
 
