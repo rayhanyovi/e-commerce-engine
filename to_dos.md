@@ -289,7 +289,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Tambahkan test untuk cart flow.
 - [x] Tambahkan test untuk checkout preview.
 - [x] Tambahkan test untuk place order idempotency.
-- [ ] Tambahkan test untuk payment review.
+- [x] Tambahkan test untuk payment review.
 - [ ] Tambahkan test untuk promotion usage limits.
 - [ ] Tambahkan test untuk stock reservation and release.
 - [ ] Tambahkan E2E untuk storefront happy path.
