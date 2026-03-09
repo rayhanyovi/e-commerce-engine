@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { DataState } from "@/components/ui/data-state";
 import { useSession } from "@/hooks";
 import { updateMyProfileRequest, type ProfileRecord } from "@/lib/profile/client";
+import type { AuthSessionRecord } from "@/lib/auth/client";
 
 interface ProfileFormValue {
   name: string;
@@ -27,8 +28,12 @@ function createProfileFormValue(profile: ProfileRecord): ProfileFormValue {
   };
 }
 
-export function ProfilePageClient() {
-  const { session, isLoading, error, refreshSession, setSession } = useSession();
+export function ProfilePageClient({
+  initialSession,
+}: {
+  initialSession?: AuthSessionRecord | null;
+}) {
+  const { session, isLoading, error, refreshSession, setSession } = useSession(initialSession);
   const [formValue, setFormValue] = useState<ProfileFormValue>({
     name: "",
     phone: "",

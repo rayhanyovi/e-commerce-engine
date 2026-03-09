@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { useCart } from "@/hooks/use-cart";
 import { formatCurrency } from "@/lib/formatters";
+import type { CartSnapshot } from "@/shared/contracts";
 
 function getErrorMessage(error: unknown) {
   if (error instanceof Error) {
@@ -14,9 +15,9 @@ function getErrorMessage(error: unknown) {
   return "Cart action failed";
 }
 
-export function CartPageClient() {
+export function CartPageClient({ initialCart = null }: { initialCart?: CartSnapshot | null }) {
   const { items, itemCount, subtotal, isLoading, error, refreshCart, updateQty, removeItem, clearCart } =
-    useCart();
+    useCart(initialCart);
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState<string | null>(null);
