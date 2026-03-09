@@ -14,4 +14,5 @@ export * from "@/server/payments";
 export * from "@/server/promotions";
 export * from "@/server/settings";
 export * from "@/server/store-config";
+export * from "@/server/users";
 export * from "@/shared/contracts";
