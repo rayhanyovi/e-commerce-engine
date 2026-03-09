@@ -102,6 +102,7 @@ export default async function AdminPaymentsPage({
           {result.payments.map((payment) => (
             <div
               key={payment.id}
+              data-testid={`payment-card-${payment.order.orderNumber}`}
               className="rounded-[1.5rem] border border-border bg-surface p-5"
             >
               <div className="flex flex-col gap-6 xl:grid xl:grid-cols-[1.1fr_0.9fr]">
