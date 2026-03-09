@@ -24,10 +24,10 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Tentukan stack target untuk data layer: Prisma tetap dipakai atau ada perubahan.
 - [x] Tentukan auth stack: custom JWT cookie, Lucia/Auth.js, atau solusi internal lain.
 - [x] Tentukan apakah React Query masih dipakai di Next app atau hanya dipakai untuk bagian yang benar-benar client-heavy.
-- [ ] Port atau regenerate komponen shadcn/ui agar kompatibel dengan Next + React 19.
-- [ ] Rencanakan migrasi Tailwind 3 tokens ke Tailwind 4.
+- [x] Port atau regenerate komponen shadcn/ui agar kompatibel dengan Next + React 19.
+- [x] Rencanakan migrasi Tailwind 3 tokens ke Tailwind 4.
 - [x] Tambahkan dependency yang benar-benar diperlukan untuk backend logic di app Next.
-- [ ] Hindari membawa dependency source yang tidak terpakai.
+- [x] Hindari membawa dependency source yang tidak terpakai.
 
 ## 3. Environment and Configuration
 
@@ -62,7 +62,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 ## 6. Server Architecture in Next
 
 - [x] Buat folder server layer, misalnya `src/server/`.
-- [ ] Pisahkan module menjadi:
+- [x] Pisahkan module menjadi:
 - [x] `auth`
 - [x] `catalog`
 - [x] `cart`
@@ -255,14 +255,14 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Simpan hook client-only untuk form/dialog/local UI state.
 - [x] Buat wrapper auth/session hook yang SSR-safe.
 - [x] Buat cart hook baru yang tidak hard-coded pada `localStorage` saat render server.
-- [ ] Pastikan query invalidation key konsisten bila React Query tetap dipakai.
+- [x] Pastikan query invalidation key konsisten bila React Query tetap dipakai.
 
 ## 21. UI System and Design Tokens
 
-- [ ] Port token warna dari `ecommercestarter/src/index.css`.
+- [x] Port token warna dari `ecommercestarter/src/index.css`.
 - [x] Port komponen loading/empty/error states.
-- [ ] Audit komponen shadcn mana yang benar-benar dipakai.
-- [ ] Hapus komponen generated yang tidak dipakai bila sudah aman.
+- [x] Audit komponen shadcn mana yang benar-benar dipakai.
+- [x] Hapus komponen generated yang tidak dipakai bila sudah aman.
 - [ ] Pastikan desain admin dan storefront konsisten di Next app.
 
 ## 22. Security and Access Control

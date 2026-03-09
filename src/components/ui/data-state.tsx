@@ -31,8 +31,8 @@ export function DataState({
       ? "rounded-[1.5rem] border border-border bg-background p-5"
       : "rounded-[1.75rem] border border-border bg-surface p-8";
   const badgeClassName = isError
-    ? "bg-red-100 text-red-700"
-    : "bg-amber-100 text-amber-800";
+    ? "bg-status-danger/15 text-status-danger-foreground"
+    : "bg-status-warning/15 text-status-warning-foreground";
 
   return (
     <section className={shellClassName}>

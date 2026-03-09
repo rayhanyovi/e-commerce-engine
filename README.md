@@ -50,9 +50,8 @@ Implemented and active:
 
 Still open:
 
-- storefront/admin E2E coverage
 - `FREE_PRODUCT` promotion support
-- final guest checkout decision
+- manual QA sign-off checklist
 - audit log schema cleanup
 - final legacy cutover and archive of `ecommercestarter/`
 
@@ -78,6 +77,13 @@ Still open:
 - Baseline app ini tidak memakai React Query.
 - Data-heavy view diutamakan server-driven lewat App Router dan server modules.
 - Hook client dipertahankan hanya untuk mutation flow atau state UI lokal seperti cart dan session.
+
+## UI System Strategy
+
+- Baseline UI aktif tidak membawa shadcn/ui runtime atau Radix dependency dari source lama.
+- Shared primitives yang dipakai sekarang hanya internal components di `src/components/ui`.
+- Tailwind 4 theme di `app/globals.css` sudah menjadi source of truth dan sudah menyerap token status penting dari `ecommercestarter/src/index.css`.
+- Placeholder UI lama yang tidak lagi dipakai di root app sengaja dibersihkan agar surface area engine tetap kecil.
 
 ## API Guarantees
 
@@ -107,7 +113,9 @@ npm run dev
 npm run build
 npm run start
 npm run lint
+npm run typecheck
 npm test
+npm run test:e2e
 ```
 
 ## Testing Baseline
@@ -128,6 +136,7 @@ Current baseline on this repo:
 - `8` active test files
 - `45` passing tests
 - no placeholder Vitest scaffolds left in the active suite
+- `2` passing Playwright E2E specs for storefront checkout and admin payment review
 
 Database bootstrap for local development:
 
@@ -204,6 +213,7 @@ docker build -t ecommerce-engine:latest .
 
 - [overview.md](./overview.md): technical positioning, architecture, domain flows, and reuse model
 - [parity_checklist.md](./parity_checklist.md): route and endpoint parity matrix against `ecommercestarter`
+- [cutover_plan.md](./cutover_plan.md): criteria for archiving and deleting `ecommercestarter`
 - [to_dos.md](./to_dos.md): migration and implementation backlog
 - [workflow_contract.md](./workflow_contract.md): collaboration and commit rules
 

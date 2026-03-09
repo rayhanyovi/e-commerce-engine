@@ -13,13 +13,13 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
 };
 
 export const ORDER_STATUS_STYLES: Record<OrderStatus, string> = {
-  PENDING_PAYMENT: "bg-amber-100 text-amber-800",
-  PAYMENT_REVIEW: "bg-sky-100 text-sky-800",
-  PAID: "bg-emerald-100 text-emerald-800",
-  PROCESSING: "bg-violet-100 text-violet-800",
-  SHIPPED: "bg-blue-100 text-blue-800",
-  COMPLETED: "bg-emerald-100 text-emerald-800",
-  CANCELLED: "bg-rose-100 text-rose-800",
+  PENDING_PAYMENT: "bg-status-warning/15 text-status-warning-foreground",
+  PAYMENT_REVIEW: "bg-status-info/15 text-status-info-foreground",
+  PAID: "bg-status-success/15 text-status-success-foreground",
+  PROCESSING: "bg-status-purple/15 text-status-purple-foreground",
+  SHIPPED: "bg-primary/10 text-primary",
+  COMPLETED: "bg-status-success/15 text-status-success-foreground",
+  CANCELLED: "bg-status-danger/15 text-status-danger-foreground",
 };
 
 export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
@@ -31,11 +31,11 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
 };
 
 export const PAYMENT_STATUS_STYLES: Record<PaymentStatus, string> = {
-  PENDING: "bg-amber-100 text-amber-800",
-  SUBMITTED: "bg-sky-100 text-sky-800",
-  UNDER_REVIEW: "bg-sky-100 text-sky-800",
-  CONFIRMED: "bg-emerald-100 text-emerald-800",
-  REJECTED: "bg-rose-100 text-rose-800",
+  PENDING: "bg-status-warning/15 text-status-warning-foreground",
+  SUBMITTED: "bg-status-info/15 text-status-info-foreground",
+  UNDER_REVIEW: "bg-status-info/15 text-status-info-foreground",
+  CONFIRMED: "bg-status-success/15 text-status-success-foreground",
+  REJECTED: "bg-status-danger/15 text-status-danger-foreground",
 };
 
 export function formatOrderStatusLabel(status: OrderStatus) {

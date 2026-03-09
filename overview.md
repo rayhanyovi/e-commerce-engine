@@ -134,6 +134,14 @@ Baseline saat ini juga sengaja tidak memakai React Query. Pendekatannya adalah:
 - hook dipakai hanya saat memang ada kebutuhan client state yang nyata
 - invalidation logic tidak ditaruh di layer query cache global bila belum benar-benar dibutuhkan
 
+UI system yang aktif juga sudah disederhanakan:
+
+- tidak membawa runtime shadcn/ui dari source lama
+- tidak membawa React Query
+- memakai internal UI primitives yang tipis
+- memakai Tailwind 4 theme sebagai source of truth
+- sudah menyerap token status penting dari `ecommercestarter/src/index.css` ke theme root app
+
 ## Current Domain Coverage
 
 ### Implemented now
@@ -141,24 +149,25 @@ Baseline saat ini juga sengaja tidak memakai React Query. Pendekatannya adalah:
 | Domain | Status | Notes |
 | --- | --- | --- |
 | Auth | Implemented | Cookie/httpOnly session, login, register, logout, `me`, admin guard |
-| Catalog | Implemented baseline | Public list/detail, admin list, category CRUD sudah ada |
+| Catalog | Implemented | Public list/detail, admin product/category CRUD, variant management sudah ada |
 | Inventory | Implemented baseline | Manual adjustment, movement list, low stock, reserve/consume/release tercatat |
 | Cart | Implemented | Guest cart token, add/update/remove/clear, merge ke user saat auth |
 | Checkout | Implemented baseline | Preview, voucher validation, shipping calc, idempotency, inline address |
 | Payments | Implemented baseline | Manual transfer mock, instructions, proof upload, admin review queue |
 | Orders | Implemented baseline | Place order, my orders, admin orders, reservation flow, payment sync |
 | Promotions | Implemented baseline | Admin CRUD, voucher validation, scope sync, usage tracking |
+| Settings | Implemented | Admin settings list, bulk update, default initialization path |
+| Audit | Implemented baseline | Generic audit log, admin list, important domain change coverage |
+| Addresses | Implemented | Saved address CRUD dan checkout address selection sudah aktif |
+| Admin dashboard | Implemented | Summary dashboard route dan API sudah aktif |
+| Users admin | Implemented | Admin user list sudah aktif |
 
-### Still pending or partial
+### Remaining gaps
 
 | Domain | Status | Notes |
 | --- | --- | --- |
-| Settings | Pending | Admin settings page dan bulk update belum selesai |
-| Audit | Pending | Audit list page belum selesai walau audit record sebagian sudah dibuat |
-| Addresses | Partial | Saved address flow belum dimigrasikan penuh |
-| Admin dashboard | Pending | Summary dashboard belum dimigrasikan |
-| Users admin | Pending | User list/admin management belum dimigrasikan |
-| Product create/edit | Partial | Catalog list sudah ada, create/edit/variant management belum selesai |
+| Manual QA sign-off | Pending | Checklist auth sampai settings update belum ditutup |
+| Audit schema cleanup | Pending | Generic audit log sudah jalan, tapi desain akhir masih ditinjau |
 | `FREE_PRODUCT` promotions | Pending | Masih tercatat sebagai gap logic |
 
 ## Current Route Surface
@@ -166,12 +175,15 @@ Baseline saat ini juga sengaja tidak memakai React Query. Pendekatannya adalah:
 ### Storefront routes
 
 - `/`
+- `/categories`
 - `/products`
 - `/products/[slug]`
 - `/cart`
 - `/checkout`
 - `/orders`
 - `/orders/[orderId]`
+- `/addresses`
+- `/profile`
 - `/login`
 - `/register`
 
@@ -179,6 +191,9 @@ Baseline saat ini juga sengaja tidak memakai React Query. Pendekatannya adalah:
 
 - `/admin`
 - `/admin/catalog`
+- `/admin/categories`
+- `/admin/products/create`
+- `/admin/products/[id]`
 - `/admin/inventory`
 - `/admin/orders`
 - `/admin/orders/[orderId]`
@@ -186,6 +201,7 @@ Baseline saat ini juga sengaja tidak memakai React Query. Pendekatannya adalah:
 - `/admin/promotions`
 - `/admin/settings`
 - `/admin/audit`
+- `/admin/users`
 
 ### API boundaries already active
 
@@ -457,15 +473,9 @@ Itu akan menghabiskan waktu di tempat yang salah.
 
 Yang masih perlu dibereskan agar engine ini benar-benar matang:
 
-- admin settings
-- admin audit
-- addresses flow penuh
-- admin dashboard
-- users admin page
-- product create/edit/variant flow
-- keputusan final soal guest checkout
+- manual QA sign-off
 - support `FREE_PRODUCT`
-- testing yang bernilai
+- audit schema cleanup
 - removal final terhadap `ecommercestarter/`
 
 Jadi project ini sudah cukup jelas sebagai engine, tetapi belum final-complete.
