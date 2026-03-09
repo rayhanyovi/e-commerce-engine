@@ -68,7 +68,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] `cart`
 - [x] `checkout`
 - [x] `orders`
-- [ ] `payments`
+- [x] `payments`
 - [ ] `promotions`
 - [x] `inventory`
 - [ ] `settings`
@@ -155,18 +155,18 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 12. Payments Domain
 
-- [ ] Port payment instructions.
-- [ ] Batasi akses payment instructions ke owner order atau admin bila memang harus private.
-- [ ] Port upload payment proof.
-- [ ] Putuskan apakah payment proof akan tetap berupa manual URL/path atau pakai upload file sungguhan.
+- [x] Port payment instructions.
+- [x] Batasi akses payment instructions ke owner order atau admin bila memang harus private.
+- [x] Port upload payment proof.
+- [x] Putuskan apakah payment proof akan tetap berupa manual URL/path atau pakai upload file sungguhan.
 - [ ] Bila pakai upload nyata, tambahkan storage provider dan signed upload flow.
-- [ ] Port admin payment review queue.
-- [ ] Port confirm payment.
-- [ ] Port reject payment.
-- [ ] Satukan state machine order-payment:
-- [ ] upload proof harus bisa menggeser order ke `PAYMENT_REVIEW`
-- [ ] confirm payment harus bisa menggeser order ke `PAID`
-- [ ] reject payment harus bisa mengembalikan order ke status yang tepat
+- [x] Port admin payment review queue.
+- [x] Port confirm payment.
+- [x] Port reject payment.
+- [x] Satukan state machine order-payment:
+- [x] upload proof harus bisa menggeser order ke `PAYMENT_REVIEW`
+- [x] confirm payment harus bisa menggeser order ke `PAID`
+- [x] reject payment harus bisa mengembalikan order ke status yang tepat
 
 ## 13. Promotions Domain
 
@@ -321,7 +321,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 - [ ] Daftarkan dan selesaikan wiring auth middleware/session context.
 - [x] Selesaikan mismatch preview total vs final order total.
-- [ ] Selesaikan mismatch payment status vs order status.
+- [x] Selesaikan mismatch payment status vs order status.
 - [ ] Selesaikan product variant persistence bug.
 - [ ] Selesaikan admin products page yang masih placeholder.
 - [ ] Selesaikan broken nav links `/categories` dan `/profile`.
