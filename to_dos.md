@@ -236,7 +236,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 ## 19. Admin Pages
 
 - [x] Buat admin layout Next.
-- [ ] Migrasikan dashboard.
+- [x] Migrasikan dashboard.
 - [ ] Migrasikan categories page.
 - [x] Implementasikan products list yang belum jadi di source app.
 - [ ] Migrasikan product create page.
