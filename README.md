@@ -89,6 +89,28 @@ npm run build
 npm run lint
 ```
 
+## Docker
+
+Local Docker setup sekarang tersedia untuk app + Postgres.
+
+```bash
+docker compose up --build
+```
+
+Compose akan:
+
+- build image app dari root project
+- menjalankan PostgreSQL lokal
+- menjalankan `prisma db push`
+- menjalankan `prisma seed`
+- start Next.js app di `http://localhost:3000`
+
+Kalau hanya mau build image-nya:
+
+```bash
+docker build -t ecommerce-engine:latest .
+```
+
 ## Project Docs
 
 - [overview.md](./overview.md): technical positioning, architecture, domain flows, and reuse model

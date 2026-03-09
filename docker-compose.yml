@@ -1,0 +1,46 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ecommerce-engine:latest
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/ecommerce_engine?schema=public
+      AUTH_SECRET: change-this-before-deploying
+      APP_URL: http://localhost:3000
+      UPLOAD_STORAGE_DRIVER: mock
+      UPLOAD_STORAGE_BASE_URL: http://localhost:3000/uploads
+      DEFAULT_TIMEZONE: Asia/Jakarta
+      DEFAULT_CURRENCY: IDR
+      DEFAULT_LOCALE: id-ID
+      SEED_ADMIN_EMAIL: admin@example.com
+      SEED_ADMIN_NAME: Store Admin
+      SEED_ADMIN_PHONE: "+6280000000000"
+      SEED_ADMIN_PASSWORD: Admin12345!
+    command: >
+      sh -c "npm run db:push && npm run db:seed && npm run start"
+
+  db:
+    image: postgres:17-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ecommerce_engine
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ecommerce_engine"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
