@@ -42,15 +42,6 @@ export const DEFAULT_STORE_CONFIG_DEFINITIONS: StoreConfigDefinition[] = [
     usedBy: ["Admin settings"],
   },
   {
-    key: StoreConfigKeys.ALLOW_GUEST_CHECKOUT,
-    label: "Allow Guest Checkout",
-    description: "Controls whether checkout preview may proceed without an authenticated customer.",
-    section: "checkout",
-    input: "boolean",
-    defaultValue: "false",
-    usedBy: ["Checkout preview", "Checkout policy"],
-  },
-  {
     key: StoreConfigKeys.MAX_VOUCHERS_PER_ORDER,
     label: "Max Vouchers Per Order",
     description: "Hard limit for the number of vouchers that can be evaluated on one order.",

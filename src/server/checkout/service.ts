@@ -15,7 +15,6 @@ import { AppError } from "@/server/http";
 import type { CartIdentity } from "@/server/cart";
 import { validateVoucherSelection } from "@/server/promotions";
 import {
-  getStoreConfigBooleanValue,
   getStoreConfigNumberValue,
   getStoreConfigSnapshot,
 } from "@/server/store-config";
@@ -165,7 +164,6 @@ export async function buildCheckoutQuote(
   const cart = await loadActiveCart(identity, db);
   const configSnapshot = await getStoreConfigSnapshot(
     [
-      StoreConfigKeys.ALLOW_GUEST_CHECKOUT,
       StoreConfigKeys.FREE_SHIPPING_THRESHOLD,
       StoreConfigKeys.INTERNAL_FLAT_SHIPPING_COST,
       StoreConfigKeys.INTERNAL_FLAT_SHIPPING_ETA_DAYS,
@@ -246,11 +244,6 @@ export async function buildCheckoutQuote(
     rejectedVouchers,
     shippingMethod: shipping.method,
     shippingEtaDays,
-    allowGuestCheckout: getStoreConfigBooleanValue(
-      configSnapshot,
-      StoreConfigKeys.ALLOW_GUEST_CHECKOUT,
-      false,
-    ),
   };
 
   return {

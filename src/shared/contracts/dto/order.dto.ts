@@ -64,7 +64,6 @@ export const CheckoutPreviewResultSchema = z.object({
   rejectedVouchers: z.array(CheckoutPreviewRejectedVoucherSchema),
   shippingMethod: z.literal("INTERNAL_FLAT"),
   shippingEtaDays: z.number().int().min(0),
-  allowGuestCheckout: z.boolean(),
 });
 
 export type CheckoutPreviewItem = z.infer<typeof CheckoutPreviewItemSchema>;

@@ -38,7 +38,7 @@ const sectionMeta: Record<
   },
   checkout: {
     title: "Checkout",
-    description: "Voucher policy and guest checkout rules consumed by the live checkout flow.",
+    description: "Voucher policy and authenticated checkout rules consumed by the live checkout flow.",
   },
   shipping: {
     title: "Shipping",

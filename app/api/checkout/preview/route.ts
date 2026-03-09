@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { CheckoutPreviewSchema, successResponse } from "@/shared/contracts";
+import { requireUser } from "@/server/auth";
 import { applyCartSessionCookie, requireCartIdentity, resolveCartSession } from "@/server/cart";
 import { getCheckoutPreview } from "@/server/checkout";
 import {
@@ -12,9 +13,8 @@ export const runtime = "nodejs";
 export async function POST(request: NextRequest) {
   try {
     const payload = CheckoutPreviewSchema.parse(await request.json());
-    const session = await resolveCartSession(request, {
-      ensureGuestToken: true,
-    });
+    await requireUser(request);
+    const session = await resolveCartSession(request);
     const preview = await getCheckoutPreview(requireCartIdentity(session), payload);
     const response = NextResponse.json(successResponse(preview));
 

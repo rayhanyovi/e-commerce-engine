@@ -92,9 +92,8 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Pindahkan penyimpanan auth dari `localStorage` ke cookie/httpOnly atau session mechanism lain yang SSR-friendly.
 - [x] Implement admin role guard untuk route admin dan server actions admin.
 - [x] Implement profile update endpoint/page bila memang dibutuhkan.
-- [ ] Putuskan nasib guest cart dan guest checkout:
-- [ ] jika guest checkout didukung, implement guest identity cookie end-to-end
-- [ ] jika guest checkout tidak didukung, hapus misleading config dan flow
+- [x] Putuskan nasib guest cart dan guest checkout: guest cart tetap didukung, guest checkout tidak didukung.
+- [x] Jika guest checkout tidak didukung, hapus misleading config dan flow.
 
 ## 8. Catalog Domain
 
@@ -131,8 +130,8 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Implement voucher validation yang sama antara preview dan order finalization.
 - [x] Pastikan shipping address bisa berasal dari saved address atau inline form.
 - [x] Implement idempotency key handling di Next server layer.
-- [ ] Putuskan apakah checkout harus login atau boleh guest.
-- [ ] Pastikan `ALLOW_GUEST_CHECKOUT` benar-benar dipakai atau dihapus.
+- [x] Putuskan apakah checkout harus login atau boleh guest.
+- [x] Pastikan `ALLOW_GUEST_CHECKOUT` benar-benar dipakai atau dihapus.
 
 ## 11. Orders Domain
 
@@ -206,7 +205,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Port admin settings bulk update.
 - [x] Tambahkan initialization path untuk default configs.
 - [ ] Pastikan semua config key yang ada benar-benar dipakai business logic.
-- [ ] Hapus config yang tidak lagi relevan setelah auth/checkout decision final.
+- [x] Hapus config yang tidak lagi relevan setelah auth/checkout decision final.
 
 ## 17. Dashboard and Audit
 

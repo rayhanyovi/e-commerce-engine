@@ -1,0 +1,2 @@
+DELETE FROM "StoreConfig"
+WHERE "key" = 'ALLOW_GUEST_CHECKOUT';
