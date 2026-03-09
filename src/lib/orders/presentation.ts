@@ -1,11 +1,6 @@
-import type { OrderStatus } from "@/shared/contracts";
+import type { OrderStatus, PaymentStatus } from "@/shared/contracts";
 
-export type PaymentStatus =
-  | "PENDING"
-  | "SUBMITTED"
-  | "UNDER_REVIEW"
-  | "CONFIRMED"
-  | "REJECTED";
+export type { PaymentStatus } from "@/shared/contracts";
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   PENDING_PAYMENT: "Pending Payment",

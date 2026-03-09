@@ -3,10 +3,12 @@ import { notFound, redirect } from "next/navigation";
 
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { PaymentStatusBadge } from "@/components/orders/payment-status-badge";
+import { PaymentProofUploadForm } from "@/components/storefront/payment-proof-upload-form";
 import { formatCurrency, formatDateTime } from "@/lib/formatters";
 import { getServerCurrentUser } from "@/server/auth";
 import { AppError } from "@/server/http";
 import { getMyOrderById } from "@/server/orders";
+import { getPaymentInstructions } from "@/server/payments";
 import { ErrorCodes } from "@/shared/contracts";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +36,14 @@ export default async function OrderDetailPage({
 
     throw error;
   }
+
+  const paymentInstructions = order.latestPayment
+    ? await getPaymentInstructions(order.id, user)
+    : null;
+  const latestPaymentProofs =
+    order.latestPayment && "proofs" in order.latestPayment
+      ? order.latestPayment.proofs
+      : [];
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-10 lg:px-10">
@@ -152,11 +162,66 @@ export default async function OrderDetailPage({
                   <span>Amount</span>
                   <span>{formatCurrency(order.latestPayment.amount)}</span>
                 </div>
+                <div className="flex items-center justify-between">
+                  <span>Proof count</span>
+                  <span>{latestPaymentProofs.length}</span>
+                </div>
               </div>
             ) : (
               <p className="mt-4 text-sm text-muted">Payment record has not been created yet.</p>
             )}
           </section>
+
+          {paymentInstructions ? (
+            <section className="rounded-[1.5rem] border border-border bg-surface p-5">
+              <h2 className="text-lg font-semibold">Payment Instructions</h2>
+              <div className="mt-4 space-y-3 text-sm text-muted">
+                <div className="flex items-center justify-between">
+                  <span>Method</span>
+                  <span>{paymentInstructions.paymentMethod}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Amount</span>
+                  <span>{formatCurrency(paymentInstructions.amount)}</span>
+                </div>
+                <div className="rounded-2xl border border-border bg-background px-4 py-4 leading-7 whitespace-pre-line">
+                  {paymentInstructions.instructions}
+                </div>
+              </div>
+            </section>
+          ) : null}
+
+          {latestPaymentProofs.length ? (
+            <section className="rounded-[1.5rem] border border-border bg-surface p-5">
+              <h2 className="text-lg font-semibold">Uploaded Proofs</h2>
+              <div className="mt-4 space-y-3">
+                {latestPaymentProofs.map((proof) => (
+                  <div
+                    key={proof.id}
+                    className="rounded-2xl border border-border bg-background px-4 py-4 text-sm text-muted"
+                  >
+                    <p className="font-medium text-foreground">
+                      {proof.fileName || proof.filePath}
+                    </p>
+                    <p className="mt-2 break-all">{proof.filePath}</p>
+                    <p className="mt-1">Uploaded {formatDateTime(proof.uploadedAt)}</p>
+                    {proof.mimeType ? <p className="mt-1">Type: {proof.mimeType}</p> : null}
+                    {proof.fileSize ? (
+                      <p className="mt-1">Size: {proof.fileSize.toLocaleString("id-ID")} bytes</p>
+                    ) : null}
+                    {proof.note ? <p className="mt-1">Note: {proof.note}</p> : null}
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {order.latestPayment ? (
+            <PaymentProofUploadForm
+              orderId={order.id}
+              paymentStatus={order.latestPayment.status}
+            />
+          ) : null}
         </aside>
       </section>
     </main>
