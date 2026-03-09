@@ -224,7 +224,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Migrasikan products list page.
 - [x] Migrasikan product detail page.
 - [x] Migrasikan cart page.
-- [ ] Migrasikan checkout page.
+- [x] Migrasikan checkout page.
 - [ ] Migrasikan orders page.
 - [ ] Migrasikan addresses page.
 - [x] Migrasikan login page.
