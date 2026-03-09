@@ -210,6 +210,7 @@ docker build -t ecommerce-engine:latest .
 ## Project Docs
 
 - [overview.md](./docs/overview.md): technical positioning, architecture, domain flows, and reuse model
+- [model_schema_review.md](./docs/model_schema_review.md): final review artifact for Prisma models, enums, and shared contracts
 - [manual_qa_report.md](./docs/manual_qa_report.md): latest scripted QA checklist run and operational notes
 - [parity_checklist.md](./docs/parity_checklist.md): route and endpoint parity matrix against `ecommercestarter`
 - [cutover_plan.md](./docs/cutover_plan.md): criteria for archiving and deleting `ecommercestarter`

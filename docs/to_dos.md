@@ -42,7 +42,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 ## 4. Database and Prisma
 
 - [x] Port `schema.prisma` ke app Next.
-- [ ] Review ulang semua model dan enum sebelum generate migration pertama.
+- [x] Review ulang semua model dan enum sebelum generate migration pertama.
 - [x] Perbaiki desain `AuditLog` agar tidak hard-link generic `entityId` ke `Order.id`.
 - [x] Review apakah `PromotionUsage` perlu relation yang lebih lengkap ke `Order` dan `User`.
 - [x] Review apakah `PaymentProof.filePath` cukup, atau perlu metadata file yang lebih formal.
@@ -55,7 +55,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 - [x] Pindahkan seluruh Zod schemas dari `packages/contracts` ke shared layer yang benar-benar dipakai app Next.
 - [x] Pertahankan envelope response bila route handlers masih exposed ke client.
-- [ ] Audit ulang schema yang belum terpakai konsisten.
+- [x] Audit ulang schema yang belum terpakai konsisten.
 - [x] Tambahkan validation untuk endpoint yang saat ini belum memakai Zod pipe.
 - [x] Pastikan type inference dari schema tetap menjadi source of truth.
 
