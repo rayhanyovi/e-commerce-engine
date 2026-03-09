@@ -23,7 +23,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 - [x] Tentukan stack target untuk data layer: Prisma tetap dipakai atau ada perubahan.
 - [x] Tentukan auth stack: custom JWT cookie, Lucia/Auth.js, atau solusi internal lain.
-- [ ] Tentukan apakah React Query masih dipakai di Next app atau hanya dipakai untuk bagian yang benar-benar client-heavy.
+- [x] Tentukan apakah React Query masih dipakai di Next app atau hanya dipakai untuk bagian yang benar-benar client-heavy.
 - [ ] Port atau regenerate komponen shadcn/ui agar kompatibel dengan Next + React 19.
 - [ ] Rencanakan migrasi Tailwind 3 tokens ke Tailwind 4.
 - [x] Tambahkan dependency yang benar-benar diperlukan untuk backend logic di app Next.

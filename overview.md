@@ -124,6 +124,12 @@ Ini adalah lapisan tipis yang menghubungkan UI ke engine:
 
 Prinsipnya: jangan duplikasi business logic di hook. Hook cukup menjadi consumer dari engine.
 
+Baseline saat ini juga sengaja tidak memakai React Query. Pendekatannya adalah:
+
+- data-heavy page dibuat server-driven sejauh mungkin
+- hook dipakai hanya saat memang ada kebutuhan client state yang nyata
+- invalidation logic tidak ditaruh di layer query cache global bila belum benar-benar dibutuhkan
+
 ## Current Domain Coverage
 
 ### Implemented now
@@ -377,6 +383,7 @@ Yang sebaiknya dianggap sebagai adapter UI:
 Contoh adapter UI yang sekarang sudah ada:
 
 - `src/hooks/use-cart.ts`
+- `src/hooks/use-session.ts`
 - `src/lib/checkout/client.ts`
 - `src/lib/orders/client.ts`
 - `src/lib/payments/client.ts`

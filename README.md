@@ -70,6 +70,12 @@ Masih pending atau partial:
 - `ecommercestarter/`
   legacy reference sementara selama parity belum selesai
 
+## Client State Strategy
+
+- Baseline app ini tidak memakai React Query.
+- Data-heavy view diutamakan server-driven lewat App Router dan server modules.
+- Hook client dipertahankan hanya untuk mutation flow atau state UI lokal seperti cart dan session.
+
 ## API Guarantees
 
 - Customer-owned API resources seperti orders, addresses, payment instructions, dan payment proof
