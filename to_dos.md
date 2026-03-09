@@ -46,7 +46,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Perbaiki desain `AuditLog` agar tidak hard-link generic `entityId` ke `Order.id`.
 - [x] Review apakah `PromotionUsage` perlu relation yang lebih lengkap ke `Order` dan `User`.
 - [x] Review apakah `PaymentProof.filePath` cukup, atau perlu metadata file yang lebih formal.
-- [ ] Jalankan Prisma migration yang benar di workspace baru.
+- [x] Jalankan Prisma migration yang benar di workspace baru.
 - [x] Tambahkan script seed.
 - [x] Implement seed untuk default `StoreConfig`.
 - [x] Tambahkan sample seed data untuk categories, products, variants, dan admin user.
