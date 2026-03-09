@@ -294,7 +294,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Tambahkan test untuk stock reservation and release.
 - [ ] Tambahkan E2E untuk storefront happy path.
 - [ ] Tambahkan E2E untuk admin payment review path.
-- [ ] Ganti placeholder Vitest test dengan test yang benar-benar bernilai.
+- [x] Ganti placeholder Vitest test dengan test yang benar-benar bernilai.
 
 ## 25. Verification and Cutover
 

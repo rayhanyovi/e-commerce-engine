@@ -110,6 +110,25 @@ npm run lint
 npm test
 ```
 
+## Testing Baseline
+
+Current automated coverage is focused on engine-critical flows, not placeholder assertions.
+
+- domain helpers and order status transitions
+- auth routes and session behavior
+- cart route handlers
+- checkout preview and order route handlers
+- place order idempotency
+- payment review state transitions
+- promotion usage limits
+- stock reservation and stock release lifecycle
+
+Current baseline on this repo:
+
+- `8` active test files
+- `45` passing tests
+- no placeholder Vitest scaffolds left in the active suite
+
 Database bootstrap for local development:
 
 1. Copy `.env.local.example` to `.env.local`.
