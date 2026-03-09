@@ -91,7 +91,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Implement `me` session/profile fetch.
 - [x] Pindahkan penyimpanan auth dari `localStorage` ke cookie/httpOnly atau session mechanism lain yang SSR-friendly.
 - [x] Implement admin role guard untuk route admin dan server actions admin.
-- [ ] Implement profile update endpoint/page bila memang dibutuhkan.
+- [x] Implement profile update endpoint/page bila memang dibutuhkan.
 - [ ] Putuskan nasib guest cart dan guest checkout:
 - [ ] jika guest checkout didukung, implement guest identity cookie end-to-end
 - [ ] jika guest checkout tidak didukung, hapus misleading config dan flow
@@ -229,8 +229,8 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Migrasikan addresses page.
 - [x] Migrasikan login page.
 - [x] Migrasikan register page.
-- [ ] Putuskan apakah `/categories` akan dibuat atau link-nya dihapus.
-- [ ] Putuskan apakah `/profile` akan dibuat atau link-nya dihapus.
+- [x] Putuskan apakah `/categories` akan dibuat atau link-nya dihapus.
+- [x] Putuskan apakah `/profile` akan dibuat atau link-nya dihapus.
 - [ ] Ganti penggunaan `<img>` external ke strategi `next/image` atau pertahankan `<img>` dengan alasan yang jelas.
 
 ## 19. Admin Pages
@@ -324,7 +324,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Selesaikan mismatch payment status vs order status.
 - [x] Selesaikan product variant persistence bug.
 - [x] Selesaikan admin products page yang masih placeholder.
-- [ ] Selesaikan broken nav links `/categories` dan `/profile`.
+- [x] Selesaikan broken nav links `/categories` dan `/profile`.
 - [ ] Selesaikan seed default config yang belum terpakai.
 - [ ] Selesaikan audit log schema design yang masih problematik.
 - [ ] Selesaikan build root yang gagal karena source lama ikut ter-compile.

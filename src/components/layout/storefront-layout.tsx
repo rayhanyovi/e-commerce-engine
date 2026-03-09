@@ -15,7 +15,7 @@ export function StorefrontLayout({ children }: { children: React.ReactNode }) {
             <Link href="/" className="text-lg font-semibold tracking-[0.12em] uppercase">
               Sora Commerce
             </Link>
-            <p className="text-xs text-muted">Catalog live on Next.js</p>
+            <p className="text-xs text-muted">Commerce engine live on Next.js</p>
           </div>
 
           <nav className="hidden items-center gap-2 md:flex">
@@ -59,8 +59,8 @@ export function StorefrontLayout({ children }: { children: React.ReactNode }) {
 
       <footer className="border-t border-border bg-surface">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-6 text-sm text-muted lg:flex-row lg:items-center lg:justify-between lg:px-10">
-          <p>Catalog dan auth sudah aktif di root Next app. Cart dan checkout jadi batch berikutnya.</p>
-          <p>Legacy reference tetap ada di `ecommercestarter/` sampai parity selesai.</p>
+          <p>Storefront, auth, cart, checkout, orders, addresses, categories, dan profile sekarang hidup di root Next app.</p>
+          <p>Legacy reference tetap ada di `ecommercestarter/` sampai parity final selesai.</p>
         </div>
       </footer>
     </div>

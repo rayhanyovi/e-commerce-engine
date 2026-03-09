@@ -26,11 +26,11 @@ export default function StorefrontHomePage() {
           </div>
           <div className="space-y-3">
             <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
-              Next storefront baru sedang dibangun langsung di root app, bukan di source legacy.
+              Reusable storefront engine sekarang hidup langsung di root Next app.
             </h1>
             <p className="max-w-2xl text-base leading-7 text-muted sm:text-lg">
-              Halaman ini sekarang jadi landing storefront awal. Visual shell sudah dipisah dari source lama
-              supaya migrasi catalog, cart, checkout, dan orders bisa masuk ke struktur App Router final.
+              Fokusnya sekarang bukan satu toko tunggal, tapi commerce core yang bisa dipakai ulang
+              untuk storefront berbeda dengan UI dan branding yang tinggal disesuaikan.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -41,10 +41,10 @@ export default function StorefrontHomePage() {
               Browse Products
             </Link>
             <Link
-              href="/checkout"
+              href="/categories"
               className="rounded-full border border-border px-5 py-3 text-sm font-medium text-muted transition hover:text-foreground"
             >
-              Review Checkout Shell
+              Browse Categories
             </Link>
           </div>
         </div>

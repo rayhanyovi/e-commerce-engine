@@ -1,10 +1,12 @@
 export const storefrontNav = [
   { href: "/", label: "Home" },
+  { href: "/categories", label: "Categories" },
   { href: "/products", label: "Products" },
   { href: "/cart", label: "Cart" },
   { href: "/checkout", label: "Checkout" },
   { href: "/addresses", label: "Addresses" },
   { href: "/orders", label: "Orders" },
+  { href: "/profile", label: "Profile" },
 ];
 
 export const adminNav = [
