@@ -185,6 +185,10 @@ UI system yang aktif juga sudah disederhanakan:
 - `/login`
 - `/register`
 
+### Developer routes
+
+- `/docs`
+
 ### Admin routes
 
 - `/admin`

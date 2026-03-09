@@ -327,3 +327,8 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Selesaikan seed default config yang belum terpakai.
 - [x] Selesaikan audit log schema design yang masih problematik.
 - [x] Selesaikan build root yang gagal karena source lama ikut ter-compile.
+
+## 27. Developer Enablement
+
+- [x] Buat route `/docs` yang mendokumentasikan API, server modules, functions, hooks, contracts, dan integration examples.
+- [x] Siapkan halaman docs yang cukup rapi untuk dipakai sebagai public developer reference.

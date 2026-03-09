@@ -33,6 +33,7 @@ Yang seharusnya berubah per client:
 Implemented and active:
 
 - storefront shell
+- public developer docs route at `/docs`
 - admin dashboard and admin shell
 - auth
 - catalog
@@ -209,6 +210,7 @@ docker build -t ecommerce-engine:latest .
 
 ## Project Docs
 
+- `/docs`: deployable developer portal for API, modules, hooks, contracts, and usage examples
 - [overview.md](./docs/overview.md): technical positioning, architecture, domain flows, and reuse model
 - [model_schema_review.md](./docs/model_schema_review.md): final review artifact for Prisma models, enums, and shared contracts
 - [manual_qa_report.md](./docs/manual_qa_report.md): latest scripted QA checklist run and operational notes
