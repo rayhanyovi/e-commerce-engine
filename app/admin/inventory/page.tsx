@@ -1,8 +1,10 @@
 import Link from "next/link";
 
 import { InventoryAdjustmentForm } from "@/components/admin/inventory-adjustment-form";
+import { DataState } from "@/components/ui/data-state";
 import { formatDateTime } from "@/lib/formatters";
 import { getSingleSearchParamValue, type SearchParamInput } from "@/lib/search-params";
+import { toUserFacingErrorMessage } from "@/lib/user-facing-error";
 import { listLowStockVariants, listStockMovements } from "@/server/inventory";
 import {
   LowStockQuerySchema,
@@ -61,19 +63,27 @@ export default async function AdminInventoryPage({
       listLowStockVariants(lowStockQuery),
     ]);
   } catch (error) {
-    errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Inventory query failed. Check database configuration and seed state.";
+    errorMessage = toUserFacingErrorMessage(
+      error,
+      "Inventory data could not be loaded right now. Try again after the database setup is ready.",
+    );
   }
 
   if (!movementsResult || !lowStockResult) {
     return (
-      <section className="rounded-[1.75rem] border border-border bg-surface p-8">
-        <p className="text-sm uppercase tracking-[0.18em] text-muted">Inventory Error</p>
-        <h1 className="mt-4 text-3xl font-semibold">Inventory page is not available</h1>
-        <p className="mt-4 text-sm leading-7 text-muted">{errorMessage}</p>
-      </section>
+      <DataState
+        tone="error"
+        eyebrow="Inventory Error"
+        title="Inventory page is not available"
+        description={
+          errorMessage ??
+          "Inventory data could not be loaded right now. Try again after the database setup is ready."
+        }
+        actions={[
+          { href: "/admin/inventory", label: "Reload inventory" },
+          { href: "/admin", label: "Back to admin", variant: "secondary" },
+        ]}
+      />
     );
   }
 
@@ -167,37 +177,48 @@ export default async function AdminInventoryPage({
             </div>
           </form>
 
-          <div className="mt-5 overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead className="text-muted">
-                <tr>
-                  <th className="pb-3 pr-4 font-medium">Date</th>
-                  <th className="pb-3 pr-4 font-medium">Variant</th>
-                  <th className="pb-3 pr-4 font-medium">Type</th>
-                  <th className="pb-3 pr-4 font-medium">Qty</th>
-                </tr>
-              </thead>
-              <tbody>
-                {movementsResult.movements.map((movement) => (
-                  <tr key={movement.id} className="border-t border-border">
-                    <td className="py-3 pr-4 text-muted">{formatDateTime(movement.createdAt)}</td>
-                    <td className="py-3 pr-4">
-                      <div className="font-medium">{movement.variant.product.name}</div>
-                      <div className="text-xs text-muted">{movement.variantLabel}</div>
-                      <div className="text-xs text-muted">ID: {movement.productVariantId}</div>
-                    </td>
-                    <td className="py-3 pr-4">{movement.movementLabel}</td>
-                    <td className="py-3 pr-4">
-                      <span className={movement.qty > 0 ? "text-emerald-700" : "text-red-700"}>
-                        {movement.qty > 0 ? "+" : ""}
-                        {movement.qty}
-                      </span>
-                    </td>
+          {movementsResult.movements.length ? (
+            <div className="mt-5 overflow-x-auto">
+              <table className="min-w-full text-left text-sm">
+                <thead className="text-muted">
+                  <tr>
+                    <th className="pb-3 pr-4 font-medium">Date</th>
+                    <th className="pb-3 pr-4 font-medium">Variant</th>
+                    <th className="pb-3 pr-4 font-medium">Type</th>
+                    <th className="pb-3 pr-4 font-medium">Qty</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {movementsResult.movements.map((movement) => (
+                    <tr key={movement.id} className="border-t border-border">
+                      <td className="py-3 pr-4 text-muted">{formatDateTime(movement.createdAt)}</td>
+                      <td className="py-3 pr-4">
+                        <div className="font-medium">{movement.variant.product.name}</div>
+                        <div className="text-xs text-muted">{movement.variantLabel}</div>
+                        <div className="text-xs text-muted">ID: {movement.productVariantId}</div>
+                      </td>
+                      <td className="py-3 pr-4">{movement.movementLabel}</td>
+                      <td className="py-3 pr-4">
+                        <span className={movement.qty > 0 ? "text-emerald-700" : "text-red-700"}>
+                          {movement.qty > 0 ? "+" : ""}
+                          {movement.qty}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="mt-5">
+              <DataState
+                eyebrow="Empty"
+                title="No stock movements yet"
+                description="Inventory tracking is connected, but there are no adjustment or order-driven stock events recorded yet."
+                size="compact"
+              />
+            </div>
+          )}
 
           {movementTotalPages > 1 ? (
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
@@ -282,29 +303,38 @@ export default async function AdminInventoryPage({
           </form>
 
           <div className="mt-5 space-y-3">
-            {lowStockResult.variants.map((variant) => (
-              <div
-                key={variant.id}
-                className="rounded-2xl border border-border bg-background px-4 py-4"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="font-medium">{variant.product.name}</div>
-                    <div className="mt-1 text-sm text-muted">{variant.variantLabel}</div>
-                    <div className="mt-1 text-xs text-muted">Variant ID: {variant.id}</div>
+            {lowStockResult.variants.length ? (
+              lowStockResult.variants.map((variant) => (
+                <div
+                  key={variant.id}
+                  className="rounded-2xl border border-border bg-background px-4 py-4"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="font-medium">{variant.product.name}</div>
+                      <div className="mt-1 text-sm text-muted">{variant.variantLabel}</div>
+                      <div className="mt-1 text-xs text-muted">Variant ID: {variant.id}</div>
+                    </div>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs ${
+                        variant.stockOnHand === 0
+                          ? "bg-red-100 text-red-700"
+                          : "bg-amber-100 text-amber-800"
+                      }`}
+                    >
+                      {variant.stockOnHand} unit(s)
+                    </span>
                   </div>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs ${
-                      variant.stockOnHand === 0
-                        ? "bg-red-100 text-red-700"
-                        : "bg-amber-100 text-amber-800"
-                    }`}
-                  >
-                    {variant.stockOnHand} unit(s)
-                  </span>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <DataState
+                eyebrow="Healthy"
+                title="No low stock variants"
+                description="All tracked variants are currently above the selected threshold."
+                size="compact"
+              />
+            )}
           </div>
 
           {lowStockTotalPages > 1 ? (

@@ -279,7 +279,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [ ] Port error envelope atau definisikan standar error baru.
 - [ ] Tambahkan structured logging.
 - [ ] Tambahkan request ID propagation bila diperlukan.
-- [ ] Tambahkan halaman error dan not-found yang proper di App Router.
+- [x] Tambahkan halaman error dan not-found yang proper di App Router.
 - [ ] Tangani empty states dan loading states untuk semua page migrasi.
 
 ## 24. Testing

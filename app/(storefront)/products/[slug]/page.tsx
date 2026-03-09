@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ProductAddToCartCard } from "@/components/storefront/product-add-to-cart-card";
+import { DataState } from "@/components/ui/data-state";
 import { formatCurrency } from "@/lib/formatters";
+import { toUserFacingErrorMessage } from "@/lib/user-facing-error";
 import { getPublicProductBySlug } from "@/server/catalog";
 import { AppError } from "@/server/http";
 import { ErrorCodes } from "@/shared/contracts";
@@ -33,20 +35,28 @@ export default async function ProductDetailPage({
       notFound();
     }
 
-    errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Product detail query failed. Check database configuration and seed state.";
+    errorMessage = toUserFacingErrorMessage(
+      error,
+      "Product detail could not be loaded right now. Try again after the catalog data is ready.",
+    );
   }
 
   if (!product) {
     return (
       <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-6 py-10 lg:px-10">
-        <section className="rounded-[1.75rem] border border-border bg-surface p-8">
-          <p className="text-sm uppercase tracking-[0.18em] text-muted">Catalog Error</p>
-          <h1 className="mt-4 text-3xl font-semibold">Product detail is not available</h1>
-          <p className="mt-4 text-sm leading-7 text-muted">{errorMessage}</p>
-        </section>
+        <DataState
+          tone="error"
+          eyebrow="Catalog Error"
+          title="Product detail is not available"
+          description={
+            errorMessage ??
+            "Product detail could not be loaded right now. Try again after the catalog data is ready."
+          }
+          actions={[
+            { href: "/products", label: "Back to products" },
+            { href: "/", label: "Back to home", variant: "secondary" },
+          ]}
+        />
       </main>
     );
   }
@@ -132,58 +142,72 @@ export default async function ProductDetailPage({
               <span className="text-sm text-muted">Select one below to add into the live cart</span>
             </div>
 
-            <div className="mt-4 overflow-x-auto">
-              <table className="min-w-full text-left text-sm">
-                <thead className="text-muted">
-                  <tr>
-                    <th className="pb-3 pr-4 font-medium">Variant</th>
-                    <th className="pb-3 pr-4 font-medium">SKU</th>
-                    <th className="pb-3 pr-4 font-medium">Price</th>
-                    <th className="pb-3 pr-4 font-medium">Stock</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {product.variants.map((variant) => {
-                    const variantLabel = variant.optionCombination.length
-                      ? variant.optionCombination
-                          .map(
-                            (item) =>
-                              `${item.optionValue.optionDefinition.name}: ${item.optionValue.value}`,
-                          )
-                          .join(", ")
-                      : variant.sku || "-";
-                    const variantPrice =
-                      variant.priceOverride ?? product.promoPrice ?? product.basePrice;
+            {product.variants.length ? (
+              <div className="mt-4 overflow-x-auto">
+                <table className="min-w-full text-left text-sm">
+                  <thead className="text-muted">
+                    <tr>
+                      <th className="pb-3 pr-4 font-medium">Variant</th>
+                      <th className="pb-3 pr-4 font-medium">SKU</th>
+                      <th className="pb-3 pr-4 font-medium">Price</th>
+                      <th className="pb-3 pr-4 font-medium">Stock</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {product.variants.map((variant) => {
+                      const variantLabel = variant.optionCombination.length
+                        ? variant.optionCombination
+                            .map(
+                              (item) =>
+                                `${item.optionValue.optionDefinition.name}: ${item.optionValue.value}`,
+                            )
+                            .join(", ")
+                        : variant.sku || "-";
+                      const variantPrice =
+                        variant.priceOverride ?? product.promoPrice ?? product.basePrice;
 
-                    return (
-                      <tr key={variant.id} className="border-t border-border">
-                        <td className="py-3 pr-4">{variantLabel}</td>
-                        <td className="py-3 pr-4 text-muted">{variant.sku || "-"}</td>
-                        <td className="py-3 pr-4">{formatCurrency(variantPrice)}</td>
-                        <td className="py-3 pr-4">
-                          <span
-                            className={`rounded-full px-3 py-1 text-xs ${
-                              variant.stockOnHand > 0
-                                ? "bg-emerald-100 text-emerald-800"
-                                : "bg-red-100 text-red-700"
-                            }`}
-                          >
-                            {variant.stockOnHand} in stock
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                      return (
+                        <tr key={variant.id} className="border-t border-border">
+                          <td className="py-3 pr-4">{variantLabel}</td>
+                          <td className="py-3 pr-4 text-muted">{variant.sku || "-"}</td>
+                          <td className="py-3 pr-4">{formatCurrency(variantPrice)}</td>
+                          <td className="py-3 pr-4">
+                            <span
+                              className={`rounded-full px-3 py-1 text-xs ${
+                                variant.stockOnHand > 0
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {variant.stockOnHand} in stock
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="mt-4">
+                <DataState
+                  eyebrow="Variant Empty"
+                  title="This product has no active variants yet"
+                  description="The product exists, but there is nothing ready to purchase until at least one active variant is published."
+                  size="compact"
+                  actions={[{ href: "/products", label: "Back to products", variant: "secondary" }]}
+                />
+              </div>
+            )}
           </section>
 
-          <ProductAddToCartCard
-            productId={product.id}
-            productName={product.name}
-            variants={cartVariants}
-          />
+          {cartVariants.length ? (
+            <ProductAddToCartCard
+              productId={product.id}
+              productName={product.name}
+              variants={cartVariants}
+            />
+          ) : null}
         </div>
       </section>
     </main>

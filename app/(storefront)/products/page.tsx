@@ -1,7 +1,9 @@
 import Link from "next/link";
 
+import { DataState } from "@/components/ui/data-state";
 import { formatCurrency } from "@/lib/formatters";
 import { toFlatSearchParams, type SearchParamInput } from "@/lib/search-params";
+import { toUserFacingErrorMessage } from "@/lib/user-facing-error";
 import { listProducts, listPublicCategories } from "@/server/catalog";
 import { ProductListQuerySchema } from "@/shared/contracts";
 
@@ -49,25 +51,37 @@ export default async function ProductsPage({
       listPublicCategories(),
     ]);
   } catch (error) {
-    errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Catalog query failed. Check database configuration and seed state.";
+    errorMessage = toUserFacingErrorMessage(
+      error,
+      "Catalog data could not be loaded right now. Try again after the database setup is ready.",
+    );
   }
 
   if (!result || !categories) {
     return (
       <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-6 py-10 lg:px-10">
-        <section className="rounded-[1.75rem] border border-border bg-surface p-8">
-          <p className="text-sm uppercase tracking-[0.18em] text-muted">Catalog Error</p>
-          <h1 className="mt-4 text-3xl font-semibold">Products are not available yet</h1>
-          <p className="mt-4 text-sm leading-7 text-muted">{errorMessage}</p>
-        </section>
+        <DataState
+          tone="error"
+          eyebrow="Catalog Error"
+          title="Products are not available yet"
+          description={
+            errorMessage ??
+            "Catalog data could not be loaded right now. Try again after the database setup is ready."
+          }
+          actions={[
+            { href: "/products", label: "Reload catalog" },
+            { href: "/", label: "Back to home", variant: "secondary" },
+          ]}
+        />
       </main>
     );
   }
 
   const totalPages = Math.max(1, Math.ceil(result.total / query.pageSize));
+  const hasActiveFilters = Boolean(
+    query.search || query.category || query.minPrice != null || query.maxPrice != null,
+  );
+  const isEmptyCatalog = !hasActiveFilters && categories.length === 0 && result.total === 0;
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-10 lg:px-10">
@@ -188,9 +202,23 @@ export default async function ProductsPage({
       </div>
 
       {!result.products.length ? (
-        <section className="rounded-[1.75rem] border border-border bg-surface p-8 text-sm text-muted">
-          No products matched the current filters. Adjust the query or clear the filters.
-        </section>
+        <DataState
+          eyebrow={isEmptyCatalog ? "Catalog Empty" : "No Matches"}
+          title={isEmptyCatalog ? "Catalog data is still empty" : "No products matched these filters"}
+          description={
+            isEmptyCatalog
+              ? "There are no published categories or products yet. Run the seed, or start adding catalog data from the admin side."
+              : "Adjust the current filters or clear them to load a broader catalog result."
+          }
+          actions={
+            hasActiveFilters
+              ? [
+                  { href: "/products", label: "Clear filters" },
+                  { href: "/", label: "Back to home", variant: "secondary" },
+                ]
+              : [{ href: "/", label: "Back to home", variant: "secondary" }]
+          }
+        />
       ) : (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {result.products.map((product) => (

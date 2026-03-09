@@ -1,7 +1,9 @@
 import Link from "next/link";
 
+import { DataState } from "@/components/ui/data-state";
 import { formatCurrency } from "@/lib/formatters";
 import { toFlatSearchParams, type SearchParamInput } from "@/lib/search-params";
+import { toUserFacingErrorMessage } from "@/lib/user-facing-error";
 import { listAdminCategories, listAdminProducts } from "@/server/catalog";
 import { ProductListQuerySchema } from "@/shared/contracts";
 
@@ -49,24 +51,33 @@ export default async function AdminCatalogPage({
       listAdminProducts(query),
     ]);
   } catch (error) {
-    errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Catalog query failed. Check database configuration and seed state.";
+    errorMessage = toUserFacingErrorMessage(
+      error,
+      "Admin catalog data could not be loaded right now. Try again after the database setup is ready.",
+    );
   }
 
   if (!categories || !result) {
     return (
-      <section className="rounded-[1.75rem] border border-border bg-surface p-8">
-        <p className="text-sm uppercase tracking-[0.18em] text-muted">Catalog Error</p>
-        <h1 className="mt-4 text-3xl font-semibold">Admin catalog is not available</h1>
-        <p className="mt-4 text-sm leading-7 text-muted">{errorMessage}</p>
-      </section>
+      <DataState
+        tone="error"
+        eyebrow="Catalog Error"
+        title="Admin catalog is not available"
+        description={
+          errorMessage ??
+          "Admin catalog data could not be loaded right now. Try again after the database setup is ready."
+        }
+        actions={[
+          { href: "/admin/catalog", label: "Reload admin catalog" },
+          { href: "/admin", label: "Back to admin", variant: "secondary" },
+        ]}
+      />
     );
   }
 
   const activeProductsOnPage = result.products.filter((product) => product.isActive).length;
   const totalPages = Math.max(1, Math.ceil(result.total / query.pageSize));
+  const hasActiveFilters = Boolean(query.search || query.category);
 
   return (
     <div className="space-y-8">
@@ -101,26 +112,35 @@ export default async function AdminCatalogPage({
             <span className="text-sm text-muted">CRUD API ready</span>
           </div>
           <div className="mt-4 space-y-3">
-            {categories.map((category) => (
-              <div
-                key={category.id}
-                className="flex items-center justify-between rounded-2xl border border-border bg-background px-4 py-3"
-              >
-                <div>
-                  <div className="font-medium">{category.name}</div>
-                  <div className="text-sm text-muted">{category.slug}</div>
-                </div>
-                <span
-                  className={`rounded-full px-3 py-1 text-xs ${
-                    category.isActive
-                      ? "bg-emerald-100 text-emerald-800"
-                      : "bg-slate-200 text-slate-700"
-                  }`}
+            {categories.length ? (
+              categories.map((category) => (
+                <div
+                  key={category.id}
+                  className="flex items-center justify-between rounded-2xl border border-border bg-background px-4 py-3"
                 >
-                  {category.isActive ? "Active" : "Inactive"}
-                </span>
-              </div>
-            ))}
+                  <div>
+                    <div className="font-medium">{category.name}</div>
+                    <div className="text-sm text-muted">{category.slug}</div>
+                  </div>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs ${
+                      category.isActive
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "bg-slate-200 text-slate-700"
+                    }`}
+                  >
+                    {category.isActive ? "Active" : "Inactive"}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <DataState
+                eyebrow="Empty"
+                title="No categories yet"
+                description="The admin catalog is connected, but there are no categories saved in the database yet."
+                size="compact"
+              />
+            )}
           </div>
         </div>
 
@@ -184,43 +204,63 @@ export default async function AdminCatalogPage({
             </div>
           </form>
 
-          <div className="mt-5 overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead className="text-muted">
-                <tr>
-                  <th className="pb-3 pr-4 font-medium">Product</th>
-                  <th className="pb-3 pr-4 font-medium">Category</th>
-                  <th className="pb-3 pr-4 font-medium">Price</th>
-                  <th className="pb-3 pr-4 font-medium">Variants</th>
-                  <th className="pb-3 pr-4 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.products.map((product) => (
-                  <tr key={product.id} className="border-t border-border">
-                    <td className="py-3 pr-4">
-                      <div className="font-medium">{product.name}</div>
-                      <div className="text-xs text-muted">{product.slug}</div>
-                    </td>
-                    <td className="py-3 pr-4">{product.category.name}</td>
-                    <td className="py-3 pr-4">{formatPriceRange(product.priceRange)}</td>
-                    <td className="py-3 pr-4">{product._count.variants}</td>
-                    <td className="py-3 pr-4">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs ${
-                          product.isActive
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-slate-200 text-slate-700"
-                        }`}
-                      >
-                        {product.isActive ? "Active" : "Inactive"}
-                      </span>
-                    </td>
+          {result.products.length ? (
+            <div className="mt-5 overflow-x-auto">
+              <table className="min-w-full text-left text-sm">
+                <thead className="text-muted">
+                  <tr>
+                    <th className="pb-3 pr-4 font-medium">Product</th>
+                    <th className="pb-3 pr-4 font-medium">Category</th>
+                    <th className="pb-3 pr-4 font-medium">Price</th>
+                    <th className="pb-3 pr-4 font-medium">Variants</th>
+                    <th className="pb-3 pr-4 font-medium">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {result.products.map((product) => (
+                    <tr key={product.id} className="border-t border-border">
+                      <td className="py-3 pr-4">
+                        <div className="font-medium">{product.name}</div>
+                        <div className="text-xs text-muted">{product.slug}</div>
+                      </td>
+                      <td className="py-3 pr-4">{product.category.name}</td>
+                      <td className="py-3 pr-4">{formatPriceRange(product.priceRange)}</td>
+                      <td className="py-3 pr-4">{product._count.variants}</td>
+                      <td className="py-3 pr-4">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs ${
+                            product.isActive
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-slate-200 text-slate-700"
+                          }`}
+                        >
+                          {product.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="mt-5">
+              <DataState
+                eyebrow={hasActiveFilters ? "No Matches" : "Catalog Empty"}
+                title={hasActiveFilters ? "No products matched this admin query" : "No products have been added yet"}
+                description={
+                  hasActiveFilters
+                    ? "Adjust or clear the current filters to inspect a broader product set."
+                    : "The admin catalog is connected, but there are still no products stored in the database."
+                }
+                size="compact"
+                actions={
+                  hasActiveFilters
+                    ? [{ href: "/admin/catalog", label: "Clear filters", variant: "secondary" }]
+                    : undefined
+                }
+              />
+            </div>
+          )}
 
           {totalPages > 1 ? (
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
