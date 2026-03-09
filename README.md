@@ -89,6 +89,20 @@ npm run build
 npm run lint
 ```
 
+Database bootstrap for local development:
+
+1. Copy `.env.example` to `.env.local`.
+
+```bash
+npm run db:migrate
+npm run db:seed
+npm run dev
+```
+
+Prisma CLI sekarang ikut membaca `.env.local`, jadi migrasi, seed, dan generate tidak lagi butuh `set DATABASE_URL=...` manual.
+
+Kalau di Windows muncul error `EPERM` saat `prisma generate` atau `prisma migrate`, stop dulu `npm run dev`, jalankan command Prisma, lalu start lagi dev server-nya.
+
 ## Docker
 
 Local Docker setup sekarang tersedia untuk app + Postgres.
@@ -101,7 +115,7 @@ Compose akan:
 
 - build image app dari root project
 - menjalankan PostgreSQL lokal
-- menjalankan `prisma db push`
+- menjalankan `prisma migrate deploy`
 - menjalankan `prisma seed`
 - start Next.js app di `http://localhost:3000`
 

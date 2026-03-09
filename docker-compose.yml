@@ -23,7 +23,7 @@ services:
       SEED_ADMIN_PHONE: "+6280000000000"
       SEED_ADMIN_PASSWORD: Admin12345!
     command: >
-      sh -c "npm run db:push && npm run db:seed && npm run start"
+      sh -c "npm run db:deploy && npm run db:seed && npm run start"
 
   db:
     image: postgres:17-bookworm

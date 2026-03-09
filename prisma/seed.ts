@@ -247,6 +247,17 @@ async function main() {
   await seedStoreConfig();
   await seedAdminUser();
   await seedCatalog();
+
+  const [storeConfigCount, categoryCount, productCount, adminCount] = await Promise.all([
+    prisma.storeConfig.count(),
+    prisma.category.count(),
+    prisma.product.count(),
+    prisma.user.count({ where: { role: UserRole.ADMIN } }),
+  ]);
+
+  console.log(
+    `Prisma seed complete. storeConfigs=${storeConfigCount} categories=${categoryCount} products=${productCount} admins=${adminCount}`,
+  );
 }
 
 main()
