@@ -21,7 +21,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 2. Dependency Strategy
 
-- [ ] Tentukan stack target untuk data layer: Prisma tetap dipakai atau ada perubahan.
+- [x] Tentukan stack target untuk data layer: Prisma tetap dipakai atau ada perubahan.
 - [ ] Tentukan auth stack: custom JWT cookie, Lucia/Auth.js, atau solusi internal lain.
 - [ ] Tentukan apakah React Query masih dipakai di Next app atau hanya dipakai untuk bagian yang benar-benar client-heavy.
 - [ ] Port atau regenerate komponen shadcn/ui agar kompatibel dengan Next + React 19.
@@ -41,15 +41,15 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 4. Database and Prisma
 
-- [ ] Port `schema.prisma` ke app Next.
+- [x] Port `schema.prisma` ke app Next.
 - [ ] Review ulang semua model dan enum sebelum generate migration pertama.
-- [ ] Perbaiki desain `AuditLog` agar tidak hard-link generic `entityId` ke `Order.id`.
-- [ ] Review apakah `PromotionUsage` perlu relation yang lebih lengkap ke `Order` dan `User`.
-- [ ] Review apakah `PaymentProof.filePath` cukup, atau perlu metadata file yang lebih formal.
+- [x] Perbaiki desain `AuditLog` agar tidak hard-link generic `entityId` ke `Order.id`.
+- [x] Review apakah `PromotionUsage` perlu relation yang lebih lengkap ke `Order` dan `User`.
+- [x] Review apakah `PaymentProof.filePath` cukup, atau perlu metadata file yang lebih formal.
 - [ ] Jalankan Prisma migration yang benar di workspace baru.
-- [ ] Tambahkan script seed.
-- [ ] Implement seed untuk default `StoreConfig`.
-- [ ] Tambahkan sample seed data untuk categories, products, variants, dan admin user.
+- [x] Tambahkan script seed.
+- [x] Implement seed untuk default `StoreConfig`.
+- [x] Tambahkan sample seed data untuk categories, products, variants, dan admin user.
 
 ## 5. Shared Contracts and Validation
 
