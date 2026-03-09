@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { uploadPaymentProofRequest } from "@/lib/payments/client";
-import type { PaymentStatus } from "@/shared/contracts";
+import type { PaymentStatus, UploadPaymentProofDto } from "@/shared/contracts";
 
 function getErrorMessage(error: unknown) {
   if (error instanceof Error) {
@@ -24,7 +24,9 @@ export function PaymentProofUploadForm({
   const router = useRouter();
   const [filePath, setFilePath] = useState("");
   const [fileName, setFileName] = useState("");
-  const [mimeType, setMimeType] = useState("image/jpeg");
+  const [mimeType, setMimeType] = useState<NonNullable<UploadPaymentProofDto["mimeType"]>>(
+    "image/jpeg",
+  );
   const [fileSize, setFileSize] = useState("");
   const [note, setNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,7 +43,7 @@ export function PaymentProofUploadForm({
       await uploadPaymentProofRequest(orderId, {
         filePath: filePath.trim(),
         fileName: fileName.trim() || undefined,
-        mimeType: mimeType.trim() || undefined,
+        mimeType,
         fileSize: fileSize ? Number(fileSize) : undefined,
         note: note.trim() || undefined,
       });
@@ -72,7 +74,8 @@ export function PaymentProofUploadForm({
       <h2 className="text-lg font-semibold">Upload Payment Proof</h2>
       <p className="mt-3 text-sm leading-7 text-muted">
         Batch ini masih pakai mock manual upload. Isi lokasi file atau URL bukti transfer, lalu
-        admin akan review dari dashboard payments.
+        admin akan review dari dashboard payments. Yang diterima hanya HTTPS URL atau internal path
+        di bawah `/uploads/`, dengan MIME image/jpeg, image/png, image/webp, atau application/pdf.
       </p>
 
       <div className="mt-4 grid gap-4">
@@ -82,7 +85,7 @@ export function PaymentProofUploadForm({
             required
             value={filePath}
             onChange={(event) => setFilePath(event.target.value)}
-            placeholder="/uploads/payments/order-proof.jpg"
+            placeholder="https://cdn.example.com/proofs/order-proof.jpg atau /uploads/payments/order-proof.jpg"
             className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
           />
         </label>
@@ -100,12 +103,18 @@ export function PaymentProofUploadForm({
 
           <label className="text-sm font-medium">
             MIME Type
-            <input
+            <select
               value={mimeType}
-              onChange={(event) => setMimeType(event.target.value)}
-              placeholder="image/jpeg"
+              onChange={(event) =>
+                setMimeType(event.target.value as NonNullable<UploadPaymentProofDto["mimeType"]>)
+              }
               className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
-            />
+            >
+              <option value="image/jpeg">image/jpeg</option>
+              <option value="image/png">image/png</option>
+              <option value="image/webp">image/webp</option>
+              <option value="application/pdf">application/pdf</option>
+            </select>
           </label>
         </div>
 

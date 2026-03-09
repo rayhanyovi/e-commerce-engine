@@ -2,6 +2,27 @@ import { z } from "zod";
 
 import { PaginationQuerySchema } from "../envelopes";
 
+const acceptedPaymentProofMimeTypes = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+] as const;
+
+function isValidPaymentProofLocation(value: string) {
+  if (value.startsWith("/uploads/")) {
+    return !value.includes("\\") && !value.includes("..");
+  }
+
+  try {
+    const url = new URL(value);
+
+    return url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export const PaymentMethodSchema = z.enum(["MANUAL_TRANSFER"]);
 
 export type PaymentMethod = z.infer<typeof PaymentMethodSchema>;
@@ -24,10 +45,26 @@ export const ReviewPaymentSchema = z.object({
 export type ReviewPaymentDto = z.infer<typeof ReviewPaymentSchema>;
 
 export const UploadPaymentProofSchema = z.object({
-  filePath: z.string().trim().min(1).max(512),
-  fileName: z.string().trim().min(1).max(255).optional(),
-  mimeType: z.string().trim().min(1).max(128).optional(),
-  fileSize: z.coerce.number().int().min(0).max(25_000_000).optional(),
+  filePath: z
+    .string()
+    .trim()
+    .min(1)
+    .max(512)
+    .refine(isValidPaymentProofLocation, {
+      message:
+        "Payment proof location must be an HTTPS URL or an internal path under /uploads/",
+    }),
+  fileName: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[A-Za-z0-9._ -]+$/, {
+      message: "File name contains unsupported characters",
+    })
+    .optional(),
+  mimeType: z.enum(acceptedPaymentProofMimeTypes).optional(),
+  fileSize: z.coerce.number().int().min(1).max(25_000_000).optional(),
   note: z.string().trim().max(500).optional(),
 });
 
