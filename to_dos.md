@@ -26,7 +26,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [ ] Tentukan apakah React Query masih dipakai di Next app atau hanya dipakai untuk bagian yang benar-benar client-heavy.
 - [ ] Port atau regenerate komponen shadcn/ui agar kompatibel dengan Next + React 19.
 - [ ] Rencanakan migrasi Tailwind 3 tokens ke Tailwind 4.
-- [ ] Tambahkan dependency yang benar-benar diperlukan untuk backend logic di app Next.
+- [x] Tambahkan dependency yang benar-benar diperlukan untuk backend logic di app Next.
 - [ ] Hindari membawa dependency source yang tidak terpakai.
 
 ## 3. Environment and Configuration
@@ -53,11 +53,11 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 5. Shared Contracts and Validation
 
-- [ ] Pindahkan seluruh Zod schemas dari `packages/contracts` ke shared layer yang benar-benar dipakai app Next.
-- [ ] Pertahankan envelope response bila route handlers masih exposed ke client.
+- [x] Pindahkan seluruh Zod schemas dari `packages/contracts` ke shared layer yang benar-benar dipakai app Next.
+- [x] Pertahankan envelope response bila route handlers masih exposed ke client.
 - [ ] Audit ulang schema yang belum terpakai konsisten.
 - [ ] Tambahkan validation untuk endpoint yang saat ini belum memakai Zod pipe.
-- [ ] Pastikan type inference dari schema tetap menjadi source of truth.
+- [x] Pastikan type inference dari schema tetap menjadi source of truth.
 
 ## 6. Server Architecture in Next
 
