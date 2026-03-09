@@ -475,6 +475,7 @@ export async function placeOrder(
           notes: shippingAddress.notes,
         },
         subtotal: quote.preview.subtotal,
+        currency: quote.preview.currency,
         productDiscountTotal: quote.preview.productDiscountTotal,
         voucherDiscountTotal: quote.preview.voucherDiscountTotal,
         shippingCost: quote.preview.shippingCost,

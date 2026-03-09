@@ -585,7 +585,7 @@ export function CheckoutPageClient() {
                   key={voucher.code}
                   className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
                 >
-                  {voucher.code} applied: {formatCurrency(voucher.discount)} ({voucher.type})
+                  {voucher.code} applied: {formatCurrency(voucher.discount, preview.currency)} ({voucher.type})
                 </div>
               ))}
             </div>
@@ -633,7 +633,7 @@ export function CheckoutPageClient() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-muted">{item.qty} item(s)</p>
-                  <p className="mt-1 font-medium">{formatCurrency(item.lineSubtotal)}</p>
+                  <p className="mt-1 font-medium">{formatCurrency(item.lineSubtotal, preview.currency)}</p>
                 </div>
               </div>
             </div>
@@ -643,19 +643,19 @@ export function CheckoutPageClient() {
         <div className="mt-6 space-y-3 text-sm text-muted">
           <div className="flex justify-between">
             <span>Subtotal</span>
-            <span>{formatCurrency(preview.subtotal)}</span>
+            <span>{formatCurrency(preview.subtotal, preview.currency)}</span>
           </div>
           <div className="flex justify-between">
             <span>Product discount</span>
-            <span>- {formatCurrency(preview.productDiscountTotal)}</span>
+            <span>- {formatCurrency(preview.productDiscountTotal, preview.currency)}</span>
           </div>
           <div className="flex justify-between">
             <span>Voucher</span>
-            <span>- {formatCurrency(preview.voucherDiscountTotal)}</span>
+            <span>- {formatCurrency(preview.voucherDiscountTotal, preview.currency)}</span>
           </div>
           <div className="flex justify-between">
             <span>Shipping</span>
-            <span>{formatCurrency(preview.shippingCost)}</span>
+            <span>{formatCurrency(preview.shippingCost, preview.currency)}</span>
           </div>
           <div className="flex justify-between">
             <span>ETA</span>
@@ -663,7 +663,7 @@ export function CheckoutPageClient() {
           </div>
           <div className="flex justify-between text-base font-semibold text-foreground">
             <span>Total</span>
-            <span>{formatCurrency(preview.grandTotal)}</span>
+            <span>{formatCurrency(preview.grandTotal, preview.currency)}</span>
           </div>
         </div>
 

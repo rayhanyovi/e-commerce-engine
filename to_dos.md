@@ -204,7 +204,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Port admin settings list.
 - [x] Port admin settings bulk update.
 - [x] Tambahkan initialization path untuk default configs.
-- [ ] Pastikan semua config key yang ada benar-benar dipakai business logic.
+- [x] Pastikan semua config key yang ada benar-benar dipakai business logic.
 - [x] Hapus config yang tidak lagi relevan setelah auth/checkout decision final.
 
 ## 17. Dashboard and Audit
@@ -324,6 +324,6 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Selesaikan product variant persistence bug.
 - [x] Selesaikan admin products page yang masih placeholder.
 - [x] Selesaikan broken nav links `/categories` dan `/profile`.
-- [ ] Selesaikan seed default config yang belum terpakai.
+- [x] Selesaikan seed default config yang belum terpakai.
 - [ ] Selesaikan audit log schema design yang masih problematik.
 - [x] Selesaikan build root yang gagal karena source lama ikut ter-compile.

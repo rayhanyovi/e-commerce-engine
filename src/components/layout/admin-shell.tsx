@@ -4,7 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { adminNav } from "@/config/navigation";
 
-export function AdminShell({ children }: { children: React.ReactNode }) {
+export function AdminShell({
+  children,
+  storeName,
+}: {
+  children: React.ReactNode;
+  storeName: string;
+}) {
   const pathname = usePathname();
 
   return (
@@ -13,7 +19,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <aside className="border-r border-border bg-surface px-6 py-8">
           <div className="mb-8">
             <Link href="/admin" className="text-lg font-semibold tracking-[0.12em] uppercase">
-              Admin Core
+              {storeName} Admin
             </Link>
             <p className="mt-2 text-sm text-muted">
               Guard auth, catalog, dan inventory sudah terhubung. Domain lain menyusul batch berikutnya.
@@ -52,7 +58,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               <div>
                 <h1 className="text-lg font-semibold">Admin Workspace</h1>
                 <p className="text-sm text-muted">
-                  Workspace ini sekarang membaca data langsung dari server modules di root Next app.
+                  Workspace {storeName} sekarang membaca data langsung dari server modules di root
+                  Next app.
                 </p>
               </div>
               <Link

@@ -2,7 +2,6 @@ import { Prisma } from "@prisma/client";
 
 import {
   ErrorCodes,
-  StoreConfigKeys,
   type PaymentReviewQueueQuery,
   type ReviewPaymentDto,
   type UploadPaymentProofDto,
@@ -11,7 +10,7 @@ import type { AuthRole } from "@/server/auth/types";
 import { prisma } from "@/server/db";
 import { AppError } from "@/server/http";
 import { updateOrderStatus } from "@/server/orders";
-import { getStoreConfigSnapshot } from "@/server/store-config";
+import { getStoreRuntimeConfig } from "@/server/store-config";
 
 type PaymentActor = {
   id: string;
@@ -110,9 +109,9 @@ async function getAccessibleOrderForInstructions(
 }
 
 export async function getPaymentInstructions(orderId: string, actor: PaymentActor) {
-  const [{ order, payment }, configSnapshot] = await Promise.all([
+  const [{ order, payment }, storeConfig] = await Promise.all([
     getAccessibleOrderForInstructions(orderId, actor),
-    getStoreConfigSnapshot([StoreConfigKeys.PAYMENT_TRANSFER_INSTRUCTIONS]),
+    getStoreRuntimeConfig(),
   ]);
 
   return {
@@ -122,9 +121,9 @@ export async function getPaymentInstructions(orderId: string, actor: PaymentActo
     currency: order.currency,
     paymentMethod: payment.method,
     paymentStatus: payment.status,
-    instructions:
-      configSnapshot.get(StoreConfigKeys.PAYMENT_TRANSFER_INSTRUCTIONS) ??
-      "Transfer ke rekening toko yang sudah ditentukan.",
+    storeName: storeConfig.storeName,
+    timezone: storeConfig.timezone,
+    instructions: storeConfig.paymentTransferInstructions,
     proofCount: payment.proofs.length,
   };
 }

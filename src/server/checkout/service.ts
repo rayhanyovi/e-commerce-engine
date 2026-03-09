@@ -17,6 +17,7 @@ import { validateVoucherSelection } from "@/server/promotions";
 import {
   getStoreConfigNumberValue,
   getStoreConfigSnapshot,
+  getStoreConfigTextValue,
 } from "@/server/store-config";
 
 type DbClient = Prisma.TransactionClient | typeof prisma;
@@ -164,6 +165,7 @@ export async function buildCheckoutQuote(
   const cart = await loadActiveCart(identity, db);
   const configSnapshot = await getStoreConfigSnapshot(
     [
+      StoreConfigKeys.CURRENCY,
       StoreConfigKeys.FREE_SHIPPING_THRESHOLD,
       StoreConfigKeys.INTERNAL_FLAT_SHIPPING_COST,
       StoreConfigKeys.INTERNAL_FLAT_SHIPPING_ETA_DAYS,
@@ -235,6 +237,7 @@ export async function buildCheckoutQuote(
 
   const preview: CheckoutPreviewResult = {
     items,
+    currency: getStoreConfigTextValue(configSnapshot, StoreConfigKeys.CURRENCY, "IDR"),
     subtotal,
     productDiscountTotal,
     voucherDiscountTotal,

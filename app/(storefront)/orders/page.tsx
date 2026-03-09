@@ -147,7 +147,9 @@ export default async function OrdersPage({
                 </div>
                 <div className="text-left lg:text-right">
                   <p className="text-sm text-muted">Grand total</p>
-                  <p className="mt-2 text-2xl font-semibold">{formatCurrency(order.grandTotal)}</p>
+                  <p className="mt-2 text-2xl font-semibold">
+                    {formatCurrency(order.grandTotal, order.currency)}
+                  </p>
                 </div>
               </div>
             </Link>

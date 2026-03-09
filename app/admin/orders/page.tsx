@@ -114,7 +114,7 @@ export default async function AdminOrdersPage({
                   </p>
                 </div>
                 <div className="grid gap-2 text-left text-sm text-muted xl:text-right">
-                  <p>Total {formatCurrency(order.grandTotal)}</p>
+                  <p>Total {formatCurrency(order.grandTotal, order.currency)}</p>
                   <p>Shipping {order.shippingMethod}</p>
                   <p>Latest payment {order.latestPayment?.method || "-"}</p>
                 </div>

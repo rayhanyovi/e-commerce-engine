@@ -1,9 +1,12 @@
 import { StorefrontLayout } from "@/components/layout/storefront-layout";
+import { getStoreRuntimeConfig } from "@/server/store-config";
 
-export default function StorefrontRouteLayout({
+export default async function StorefrontRouteLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <StorefrontLayout>{children}</StorefrontLayout>;
+  const storeConfig = await getStoreRuntimeConfig();
+
+  return <StorefrontLayout storeName={storeConfig.storeName}>{children}</StorefrontLayout>;
 }

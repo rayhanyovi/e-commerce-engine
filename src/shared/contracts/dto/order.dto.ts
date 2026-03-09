@@ -55,6 +55,7 @@ export const CheckoutPreviewRejectedVoucherSchema = z.object({
 
 export const CheckoutPreviewResultSchema = z.object({
   items: z.array(CheckoutPreviewItemSchema),
+  currency: z.string().min(1),
   subtotal: z.number().int().min(0),
   productDiscountTotal: z.number().int().min(0),
   voucherDiscountTotal: z.number().int().min(0),

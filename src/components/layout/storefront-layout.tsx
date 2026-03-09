@@ -4,7 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { storefrontNav } from "@/config/navigation";
 
-export function StorefrontLayout({ children }: { children: React.ReactNode }) {
+export function StorefrontLayout({
+  children,
+  storeName,
+}: {
+  children: React.ReactNode;
+  storeName: string;
+}) {
   const pathname = usePathname();
 
   return (
@@ -13,7 +19,7 @@ export function StorefrontLayout({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4 lg:px-10">
           <div>
             <Link href="/" className="text-lg font-semibold tracking-[0.12em] uppercase">
-              Sora Commerce
+              {storeName}
             </Link>
             <p className="text-xs text-muted">Commerce engine live on Next.js</p>
           </div>
@@ -59,7 +65,7 @@ export function StorefrontLayout({ children }: { children: React.ReactNode }) {
 
       <footer className="border-t border-border bg-surface">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-6 text-sm text-muted lg:flex-row lg:items-center lg:justify-between lg:px-10">
-          <p>Storefront, auth, cart, checkout, orders, addresses, categories, dan profile sekarang hidup di root Next app.</p>
+          <p>{storeName} sekarang berjalan di atas engine storefront, auth, cart, checkout, orders, addresses, categories, dan profile di root Next app.</p>
           <p>Legacy reference tetap ada di `ecommercestarter/` sampai parity final selesai.</p>
         </div>
       </footer>

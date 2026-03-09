@@ -1,9 +1,12 @@
 import { AdminShell } from "@/components/layout/admin-shell";
+import { getStoreRuntimeConfig } from "@/server/store-config";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <AdminShell>{children}</AdminShell>;
+  const storeConfig = await getStoreRuntimeConfig();
+
+  return <AdminShell storeName={storeConfig.storeName}>{children}</AdminShell>;
 }

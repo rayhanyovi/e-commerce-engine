@@ -71,7 +71,9 @@ export default async function AdminOrderDetailPage({
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-muted">{item.qty} item(s)</p>
-                      <p className="mt-1 font-medium">{formatCurrency(item.lineSubtotalSnapshot)}</p>
+                      <p className="mt-1 font-medium">
+                        {formatCurrency(item.lineSubtotalSnapshot, order.currency)}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -113,23 +115,23 @@ export default async function AdminOrderDetailPage({
             <div className="mt-4 space-y-3 text-sm text-muted">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>{formatCurrency(order.subtotal)}</span>
+                <span>{formatCurrency(order.subtotal, order.currency)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Product discount</span>
-                <span>- {formatCurrency(order.productDiscountTotal)}</span>
+                <span>- {formatCurrency(order.productDiscountTotal, order.currency)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Voucher</span>
-                <span>- {formatCurrency(order.voucherDiscountTotal)}</span>
+                <span>- {formatCurrency(order.voucherDiscountTotal, order.currency)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping</span>
-                <span>{formatCurrency(order.shippingCost)}</span>
+                <span>{formatCurrency(order.shippingCost, order.currency)}</span>
               </div>
               <div className="flex justify-between text-base font-semibold text-foreground">
                 <span>Total</span>
-                <span>{formatCurrency(order.grandTotal)}</span>
+                <span>{formatCurrency(order.grandTotal, order.currency)}</span>
               </div>
             </div>
           </section>
