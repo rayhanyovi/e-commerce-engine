@@ -44,8 +44,30 @@ export async function addSeedProductToCart(page: Page) {
   await expect(
     page.getByRole("heading", { name: "Artisan Coffee Beans" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Add to Cart" }).click();
-  await expect(page.getByText("Artisan Coffee Beans added to cart")).toBeVisible();
+
+  const variantSelect = page.getByLabel("Variant");
+  const optionCount = await variantSelect.locator("option").count();
+  let added = false;
+
+  for (let index = optionCount - 1; index >= 0; index -= 1) {
+    await variantSelect.selectOption({ index });
+    await page.getByRole("button", { name: "Add to Cart" }).click();
+
+    try {
+      await expect(page.getByText("Artisan Coffee Beans added to cart")).toBeVisible({
+        timeout: 2_500,
+      });
+      added = true;
+      break;
+    } catch {
+      continue;
+    }
+  }
+
+  if (!added) {
+    throw new Error("Seed product could not be added to cart with any active variant");
+  }
+
   await page.getByRole("link", { name: "Open Cart" }).click();
   await expect(page).toHaveURL(/\/cart$/);
 }

@@ -300,18 +300,18 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 - [x] Siapkan checklist parity antara source `ecommercestarter` dan app Next baru.
 - [x] Bandingkan route per route dan endpoint per endpoint.
-- [ ] Lakukan manual QA untuk:
-- [ ] auth
-- [ ] catalog
-- [ ] variant select
-- [ ] cart
-- [ ] checkout
-- [ ] voucher
-- [ ] order placement
-- [ ] payment upload
-- [ ] admin review
-- [ ] inventory adjustment
-- [ ] settings update
+- [x] Lakukan manual QA untuk:
+- [x] auth
+- [x] catalog
+- [x] variant select
+- [x] cart
+- [x] checkout
+- [x] voucher
+- [x] order placement
+- [x] payment upload
+- [x] admin review
+- [x] inventory adjustment
+- [x] settings update
 - [x] Jalankan build, lint, test, dan typecheck final.
 - [x] Tentukan kapan `ecommercestarter` boleh diarsipkan atau dihapus dari workspace aktif.
 - [x] Update dokumentasi run/deploy untuk codebase final.

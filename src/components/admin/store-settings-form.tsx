@@ -209,6 +209,7 @@ export function StoreSettingsForm({
             {section.configs.map((config) => (
               <div
                 key={config.key}
+                data-testid={`setting-card-${config.key}`}
                 className="rounded-[1.5rem] border border-border bg-background p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -227,6 +228,7 @@ export function StoreSettingsForm({
                   {config.input === "boolean" ? (
                     <label className="flex items-center gap-3 rounded-2xl border border-border bg-white px-4 py-4 text-sm font-medium">
                       <input
+                        data-testid={`setting-input-${config.key}`}
                         type="checkbox"
                         checked={values[config.key] === "true"}
                         onChange={(event) =>
@@ -237,6 +239,7 @@ export function StoreSettingsForm({
                     </label>
                   ) : config.input === "textarea" ? (
                     <textarea
+                      data-testid={`setting-input-${config.key}`}
                       value={values[config.key]}
                       onChange={(event) => setConfigValue(config.key, event.target.value)}
                       rows={5}
@@ -244,6 +247,7 @@ export function StoreSettingsForm({
                     />
                   ) : (
                     <input
+                      data-testid={`setting-input-${config.key}`}
                       type={config.input === "number" ? "number" : "text"}
                       min={config.input === "number" ? "0" : undefined}
                       value={values[config.key]}
