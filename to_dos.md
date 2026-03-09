@@ -31,13 +31,13 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 3. Environment and Configuration
 
-- [ ] Definisikan `.env` contract untuk:
-- [ ] `DATABASE_URL`
-- [ ] `JWT_SECRET` atau auth secret baru
-- [ ] app base URL
-- [ ] upload storage config jika payment proof jadi real upload
+- [x] Definisikan `.env` contract untuk:
+- [x] `DATABASE_URL`
+- [x] `JWT_SECRET` atau auth secret baru
+- [x] app base URL
+- [x] upload storage config jika payment proof jadi real upload
 - [ ] Tambahkan config per environment: local, staging, production.
-- [ ] Putuskan timezone default, currency default, dan base locale.
+- [x] Putuskan timezone default, currency default, dan base locale.
 
 ## 4. Database and Prisma
 
