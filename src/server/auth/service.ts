@@ -40,6 +40,15 @@ function toSessionPayload(user: AuthUser): SessionPayload {
   };
 }
 
+async function getUserBySessionSubject(subject: string): Promise<AuthUser | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: subject },
+    select: authUserSelect,
+  });
+
+  return user ? mapAuthUser(user) : null;
+}
+
 export async function registerUser(dto: RegisterDto) {
   const existingUser = await prisma.user.findUnique({
     where: { email: dto.email },
@@ -100,6 +109,11 @@ export async function loginUser(dto: LoginDto) {
 export async function getCurrentUser(request: NextRequest): Promise<AuthUser | null> {
   const token = readSessionToken(request);
 
+  return getCurrentUserByToken(token);
+}
+
+export async function getCurrentUserByToken(token: string | null): Promise<AuthUser | null> {
+
   if (!token) {
     return null;
   }
@@ -110,12 +124,7 @@ export async function getCurrentUser(request: NextRequest): Promise<AuthUser | n
     return null;
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.sub },
-    select: authUserSelect,
-  });
-
-  return user ? mapAuthUser(user) : null;
+  return getUserBySessionSubject(session.sub);
 }
 
 export async function requireUser(request: NextRequest): Promise<AuthUser> {

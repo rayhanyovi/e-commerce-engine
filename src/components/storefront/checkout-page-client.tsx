@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { startTransition, useEffect, useState } from "react";
 
 import { fetchCheckoutPreview } from "@/lib/checkout/client";
 import { formatCurrency } from "@/lib/formatters";
+import { placeOrderRequest } from "@/lib/orders/client";
 import type { CheckoutPreviewResult } from "@/shared/contracts";
 
 function parseVoucherCodes(value: string) {
@@ -19,14 +21,26 @@ function getErrorMessage(error: unknown) {
     return error.message;
   }
 
-  return "Checkout preview failed";
+  return "Checkout request failed";
 }
 
 export function CheckoutPageClient() {
+  const router = useRouter();
   const [preview, setPreview] = useState<CheckoutPreviewResult | null>(null);
   const [voucherInput, setVoucherInput] = useState("");
+  const [shippingAddress, setShippingAddress] = useState({
+    recipientName: "",
+    phone: "",
+    addressLine1: "",
+    addressLine2: "",
+    district: "",
+    city: "",
+    postalCode: "",
+    notes: "",
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState<string | null>(null);
 
@@ -58,6 +72,44 @@ export function CheckoutPageClient() {
       } else {
         setIsLoading(false);
       }
+    }
+  }
+
+  async function handlePlaceOrder() {
+    if (!preview) {
+      return;
+    }
+
+    setIsPlacingOrder(true);
+    setError(null);
+    setLastAction(null);
+
+    try {
+      const order = await placeOrderRequest(
+        {
+          shippingAddress: {
+            recipientName: shippingAddress.recipientName,
+            phone: shippingAddress.phone,
+            addressLine1: shippingAddress.addressLine1,
+            addressLine2: shippingAddress.addressLine2 || undefined,
+            district: shippingAddress.district || undefined,
+            city: shippingAddress.city || undefined,
+            postalCode: shippingAddress.postalCode || undefined,
+            notes: shippingAddress.notes || undefined,
+          },
+          shippingMethod: preview.shippingMethod,
+          voucherCodes: parseVoucherCodes(voucherInput),
+          paymentMethod: "MANUAL_TRANSFER",
+        },
+        crypto.randomUUID?.() ?? `order_${Date.now()}`,
+      );
+
+      router.push(`/orders/${order.id}`);
+      router.refresh();
+    } catch (error) {
+      setError(getErrorMessage(error));
+    } finally {
+      setIsPlacingOrder(false);
     }
   }
 
@@ -121,7 +173,7 @@ export function CheckoutPageClient() {
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-muted">
             Formula subtotal, voucher, shipping, dan total sekarang dihitung dari active cart dan
-            `StoreConfig`, bukan mock number lagi.
+            `StoreConfig`, lalu order final memakai formula yang sama.
           </p>
 
           {lastAction ? (
@@ -140,11 +192,116 @@ export function CheckoutPageClient() {
         <section className="rounded-[1.5rem] border border-border bg-surface p-5">
           <h2 className="text-lg font-semibold">Shipping Address</h2>
           <p className="mt-3 text-sm leading-7 text-muted">
-            Address domain belum dimigrasikan penuh. Batch berikutnya akan menghubungkan saved
-            addresses dan inline address snapshot ke preview/order final.
+            Inline shipping snapshot sekarang dipakai saat place order. Saved address support sudah
+            ada di service dan akan dihubungkan penuh pada batch addresses.
           </p>
-          <div className="mt-4 rounded-2xl border border-border bg-background px-4 py-4 text-sm text-muted">
-            Current preview memakai shipping method internal flat dengan ETA {preview.shippingEtaDays} day(s).
+
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <label className="text-sm font-medium">
+              Recipient Name
+              <input
+                value={shippingAddress.recipientName}
+                onChange={(event) =>
+                  setShippingAddress((current) => ({
+                    ...current,
+                    recipientName: event.target.value,
+                  }))
+                }
+                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+              />
+            </label>
+            <label className="text-sm font-medium">
+              Phone
+              <input
+                value={shippingAddress.phone}
+                onChange={(event) =>
+                  setShippingAddress((current) => ({
+                    ...current,
+                    phone: event.target.value,
+                  }))
+                }
+                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+              />
+            </label>
+            <label className="text-sm font-medium md:col-span-2">
+              Address Line 1
+              <input
+                value={shippingAddress.addressLine1}
+                onChange={(event) =>
+                  setShippingAddress((current) => ({
+                    ...current,
+                    addressLine1: event.target.value,
+                  }))
+                }
+                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+              />
+            </label>
+            <label className="text-sm font-medium md:col-span-2">
+              Address Line 2
+              <input
+                value={shippingAddress.addressLine2}
+                onChange={(event) =>
+                  setShippingAddress((current) => ({
+                    ...current,
+                    addressLine2: event.target.value,
+                  }))
+                }
+                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+              />
+            </label>
+            <label className="text-sm font-medium">
+              District
+              <input
+                value={shippingAddress.district}
+                onChange={(event) =>
+                  setShippingAddress((current) => ({
+                    ...current,
+                    district: event.target.value,
+                  }))
+                }
+                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+              />
+            </label>
+            <label className="text-sm font-medium">
+              City
+              <input
+                value={shippingAddress.city}
+                onChange={(event) =>
+                  setShippingAddress((current) => ({
+                    ...current,
+                    city: event.target.value,
+                  }))
+                }
+                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+              />
+            </label>
+            <label className="text-sm font-medium">
+              Postal Code
+              <input
+                value={shippingAddress.postalCode}
+                onChange={(event) =>
+                  setShippingAddress((current) => ({
+                    ...current,
+                    postalCode: event.target.value,
+                  }))
+                }
+                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+              />
+            </label>
+            <label className="text-sm font-medium md:col-span-2">
+              Note
+              <textarea
+                rows={3}
+                value={shippingAddress.notes}
+                onChange={(event) =>
+                  setShippingAddress((current) => ({
+                    ...current,
+                    notes: event.target.value,
+                  }))
+                }
+                className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 outline-none transition focus:border-accent"
+              />
+            </label>
           </div>
         </section>
 
@@ -203,7 +360,7 @@ export function CheckoutPageClient() {
           <h2 className="text-lg font-semibold">Payment Mode</h2>
           <p className="mt-3 text-sm leading-7 text-muted">
             Payment masih mock manual transfer. Provider real seperti Xendit akan dipasang setelah
-            order placement dan payment review queue selesai.
+            payment review queue dan proof upload selesai.
           </p>
           <div className="mt-4 rounded-2xl border border-border bg-background px-4 py-4 text-sm text-muted">
             Method preview: manual transfer. Final payment instructions akan diambil dari store
@@ -216,7 +373,10 @@ export function CheckoutPageClient() {
         <p className="text-sm uppercase tracking-[0.18em] text-muted">Order Summary</p>
         <div className="mt-5 space-y-4">
           {preview.items.map((item) => (
-            <div key={`${item.productId}-${item.productVariantId}`} className="rounded-2xl border border-border bg-background px-4 py-4">
+            <div
+              key={`${item.productId}-${item.productVariantId}`}
+              className="rounded-2xl border border-border bg-background px-4 py-4"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="font-medium">{item.productName}</p>
@@ -260,10 +420,11 @@ export function CheckoutPageClient() {
 
         <button
           type="button"
-          disabled
-          className="mt-6 w-full cursor-not-allowed rounded-full bg-accent/60 px-5 py-3 text-sm font-medium text-white"
+          onClick={() => void handlePlaceOrder()}
+          disabled={isPlacingOrder}
+          className="mt-6 w-full rounded-full bg-accent px-5 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-accent/60"
         >
-          Place Order Next Batch
+          {isPlacingOrder ? "Placing Order..." : "Place Order"}
         </button>
 
         <Link
@@ -275,7 +436,7 @@ export function CheckoutPageClient() {
 
         <p className="mt-4 text-sm leading-6 text-muted">
           {preview.allowGuestCheckout
-            ? "Guest checkout is enabled in current store config."
+            ? "Guest checkout is enabled in current store config, but the current order flow still requires authenticated ownership."
             : "Guest checkout is currently disabled in store config. Order placement will require login unless that setting changes."}
         </p>
       </aside>
