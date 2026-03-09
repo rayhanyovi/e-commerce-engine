@@ -41,6 +41,8 @@ export interface VoucherValidationItem {
   productId: string;
   productVariantId: string;
   categoryId: string;
+  unitPrice: number;
+  qty: number;
 }
 
 export interface VoucherValidationResult {
@@ -169,7 +171,7 @@ async function ensureUniquePromotionCode(
   }
 }
 
-function isPromotionApplicableToItems(
+function getApplicableItemsForPromotion(
   promotion: {
     scopes: Array<{
       scopeType: "ALL_PRODUCTS" | "CATEGORY" | "PRODUCT" | "VARIANT";
@@ -178,28 +180,63 @@ function isPromotionApplicableToItems(
   },
   items: VoucherValidationItem[],
 ) {
-  if (!promotion.scopes.length || !items.length) {
-    return !promotion.scopes.length || promotion.scopes.some((scope) => scope.scopeType === "ALL_PRODUCTS");
+  if (!promotion.scopes.length) {
+    return items;
   }
 
-  return promotion.scopes.some((scope) => {
-    switch (scope.scopeType) {
-      case "ALL_PRODUCTS":
-        return true;
+  const applicableItems = new Map<string, VoucherValidationItem>();
 
-      case "CATEGORY":
-        return items.some((item) => item.categoryId === scope.targetId);
+  for (const item of items) {
+    const matches = promotion.scopes.some((scope) => {
+      switch (scope.scopeType) {
+        case "ALL_PRODUCTS":
+          return true;
 
-      case "PRODUCT":
-        return items.some((item) => item.productId === scope.targetId);
+        case "CATEGORY":
+          return item.categoryId === scope.targetId;
 
-      case "VARIANT":
-        return items.some((item) => item.productVariantId === scope.targetId);
+        case "PRODUCT":
+          return item.productId === scope.targetId;
 
-      default:
-        return false;
+        case "VARIANT":
+          return item.productVariantId === scope.targetId;
+
+        default:
+          return false;
+      }
+    });
+
+    if (matches) {
+      applicableItems.set(item.productVariantId, item);
     }
-  });
+  }
+
+  return Array.from(applicableItems.values());
+}
+
+function calculateFreeProductDiscount(
+  promotion: {
+    value: number;
+  },
+  items: VoucherValidationItem[],
+) {
+  if (promotion.value <= 0 || !items.length) {
+    return 0;
+  }
+
+  const eligibleUnitPrices = items
+    .flatMap((item) => Array.from({ length: item.qty }, () => item.unitPrice))
+    .sort((left, right) => left - right);
+
+  if (!eligibleUnitPrices.length) {
+    return 0;
+  }
+
+  const freeUnits = Math.min(promotion.value, eligibleUnitPrices.length);
+
+  return eligibleUnitPrices
+    .slice(0, freeUnits)
+    .reduce((sum, unitPrice) => sum + unitPrice, 0);
 }
 
 export async function validateVoucherSelection(
@@ -309,7 +346,9 @@ export async function validateVoucherSelection(
       continue;
     }
 
-    if (!isPromotionApplicableToItems(promotion, input.items)) {
+    const applicableItems = getApplicableItemsForPromotion(promotion, input.items);
+
+    if (!applicableItems.length) {
       rejectedVouchers.push({
         code,
         reason: "Voucher does not match the current cart scope",
@@ -333,13 +372,16 @@ export async function validateVoucherSelection(
       continue;
     }
 
-    const discount = calculateDiscount(
-      {
-        ...promotion,
-        scopes: promotion.scopes,
-      },
-      input.subtotal,
-    );
+    const discount =
+      promotion.type === "FREE_PRODUCT"
+        ? calculateFreeProductDiscount(promotion, applicableItems)
+        : calculateDiscount(
+            {
+              ...promotion,
+              scopes: promotion.scopes,
+            },
+            input.subtotal,
+          );
 
     appliedVouchers.push({
       code,
@@ -417,6 +459,15 @@ export async function listAdminPromotions(query: PromotionListQuery) {
 
 export async function createPromotion(dto: CreatePromotionDto, actorId?: string) {
   validatePromotionWindow(dto.validFrom, dto.validUntil);
+
+  if (dto.type === "FREE_PRODUCT" && dto.value < 1) {
+    throw new AppError(
+      400,
+      ErrorCodes.VALIDATION_ERROR,
+      "Free product promotions must grant at least one free unit",
+    );
+  }
+
   const code = normalizePromotionCode(dto.code);
   await ensureUniquePromotionCode(code);
   const scopes = normalizeScopes(dto.scopes);
@@ -483,6 +534,15 @@ export async function updatePromotion(
   validatePromotionWindow(nextValidFrom, nextValidUntil);
   const code =
     dto.code === undefined ? existingPromotion.code : normalizePromotionCode(dto.code);
+
+  if (dto.type === "FREE_PRODUCT" && dto.value != null && dto.value < 1) {
+    throw new AppError(
+      400,
+      ErrorCodes.VALIDATION_ERROR,
+      "Free product promotions must grant at least one free unit",
+    );
+  }
+
   await ensureUniquePromotionCode(code, id);
   const scopes = dto.scopes ? normalizeScopes(dto.scopes) : null;
 

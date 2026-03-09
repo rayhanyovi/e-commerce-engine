@@ -29,7 +29,7 @@ This document defines when `ecommercestarter/` is no longer needed in the active
 
 ## Current blockers before archive
 
-- `FREE_PRODUCT` promotion support is still open.
+- No engine blockers remain in the current migration backlog.
 
 ## Archive action
 

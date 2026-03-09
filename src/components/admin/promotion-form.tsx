@@ -340,6 +340,11 @@ export function PromotionForm({
                 setValue((current) => ({
                   ...current,
                   type: event.target.value as PromotionType,
+                  value:
+                    event.target.value === "FREE_PRODUCT" &&
+                    (!current.value || current.value === "0")
+                      ? "1"
+                      : current.value,
                 }))
               }
               className="mt-2 w-full rounded-2xl border border-border bg-white px-4 py-3 outline-none transition focus:border-accent"
@@ -364,6 +369,13 @@ export function PromotionForm({
               }
               className="mt-2 w-full rounded-2xl border border-border bg-white px-4 py-3 outline-none transition focus:border-accent"
             />
+            <span className="mt-2 block text-xs leading-6 text-muted">
+              {value.type === "FREE_PRODUCT"
+                ? "For FREE_PRODUCT, value means how many eligible units become free. The engine discounts the cheapest matching units already present in the cart."
+                : value.type === "FREE_SHIPPING"
+                  ? "For FREE_SHIPPING, value is kept for contract consistency but shipping cost is what becomes free."
+                  : "For percentage and fixed amount promotions, value is the raw discount input consumed by the engine."}
+            </span>
           </label>
         </div>
 

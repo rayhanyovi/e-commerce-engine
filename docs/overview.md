@@ -155,7 +155,7 @@ UI system yang aktif juga sudah disederhanakan:
 | Checkout | Implemented baseline | Preview, voucher validation, shipping calc, idempotency, inline address |
 | Payments | Implemented baseline | Manual transfer mock, instructions, proof upload, admin review queue |
 | Orders | Implemented baseline | Place order, my orders, admin orders, reservation flow, payment sync |
-| Promotions | Implemented baseline | Admin CRUD, voucher validation, scope sync, usage tracking |
+| Promotions | Implemented | Admin CRUD, voucher validation, scope sync, usage tracking, and `FREE_PRODUCT` discounting for the cheapest eligible cart units |
 | Settings | Implemented | Admin settings list, bulk update, default initialization path |
 | Audit | Implemented | Typed generic audit log, admin list, entity/context filters, request trace, and important domain change coverage |
 | Addresses | Implemented | Saved address CRUD dan checkout address selection sudah aktif |
@@ -167,7 +167,6 @@ UI system yang aktif juga sudah disederhanakan:
 | Domain | Status | Notes |
 | --- | --- | --- |
 | UI consistency pass | Pending | Final consistency pass untuk admin dan storefront masih terbuka |
-| `FREE_PRODUCT` promotions | Pending | Masih tercatat sebagai gap logic |
 
 ## Current Route Surface
 
@@ -472,7 +471,6 @@ Itu akan menghabiskan waktu di tempat yang salah.
 
 Yang masih perlu dibereskan agar engine ini benar-benar matang:
 
-- support `FREE_PRODUCT`
 - design consistency pass
 - removal final terhadap `ecommercestarter/`
 

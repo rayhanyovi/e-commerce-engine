@@ -12,6 +12,8 @@ import { validateVoucherSelection } from "../service";
 
 function createPromotion(input?: {
   code?: string;
+  type?: "FIXED_AMOUNT" | "FREE_PRODUCT";
+  value?: number;
   totalUsed?: number;
   totalUsageLimit?: number | null;
   perUserUsageLimit?: number | null;
@@ -20,8 +22,8 @@ function createPromotion(input?: {
   return {
     id: `cmfpromotion${input?.code ?? "promo"}0000000001`,
     code: input?.code ?? "PROMO10",
-    type: "FIXED_AMOUNT" as const,
-    value: 10000,
+    type: input?.type ?? ("FIXED_AMOUNT" as const),
+    value: input?.value ?? 10000,
     minPurchase: null,
     maxDiscountCap: null,
     validFrom: new Date("2026-03-01T00:00:00.000Z"),
@@ -100,6 +102,8 @@ describe("promotion usage limits", () => {
             productId: "cmfproduct000000000000001",
             productVariantId: "cmfvariant000000000000001",
             categoryId: "cmfcategory00000000000001",
+            unitPrice: 100000,
+            qty: 1,
           },
         ],
       },
@@ -143,6 +147,8 @@ describe("promotion usage limits", () => {
             productId: "cmfproduct000000000000001",
             productVariantId: "cmfvariant000000000000001",
             categoryId: "cmfcategory00000000000001",
+            unitPrice: 100000,
+            qty: 1,
           },
         ],
       },
@@ -184,6 +190,8 @@ describe("promotion usage limits", () => {
             productId: "cmfproduct000000000000001",
             productVariantId: "cmfvariant000000000000001",
             categoryId: "cmfcategory00000000000001",
+            unitPrice: 100000,
+            qty: 1,
           },
         ],
       },
@@ -199,5 +207,55 @@ describe("promotion usage limits", () => {
     ]);
     expect(result.rejectedVouchers).toEqual([]);
     expect(result.voucherDiscountTotal).toBe(10000);
+  });
+
+  it("applies FREE_PRODUCT promotions as the cheapest eligible unit total", async () => {
+    const db = {
+      promotion: {
+        findMany: vi.fn().mockResolvedValue([
+          createPromotion({
+            code: "FREEBEAN",
+            type: "FREE_PRODUCT",
+            value: 2,
+          }),
+        ]),
+      },
+    };
+
+    const result = await validateVoucherSelection(
+      {
+        codes: ["FREEBEAN"],
+        subtotal: 380000,
+        productDiscountTotal: 0,
+        userId: "cmfuser000000000000000001",
+        items: [
+          {
+            productId: "cmfproduct000000000000001",
+            productVariantId: "cmfvariant000000000000001",
+            categoryId: "cmfcategory00000000000001",
+            unitPrice: 120000,
+            qty: 2,
+          },
+          {
+            productId: "cmfproduct000000000000002",
+            productVariantId: "cmfvariant000000000000002",
+            categoryId: "cmfcategory00000000000001",
+            unitPrice: 140000,
+            qty: 1,
+          },
+        ],
+      },
+      db as never,
+    );
+
+    expect(result.appliedVouchers).toEqual([
+      {
+        code: "FREEBEAN",
+        discount: 240000,
+        type: "FREE_PRODUCT",
+      },
+    ]);
+    expect(result.rejectedVouchers).toEqual([]);
+    expect(result.voucherDiscountTotal).toBe(240000);
   });
 });

@@ -208,6 +208,8 @@ export async function buildCheckoutQuote(
         productId: item.productId,
         productVariantId: item.productVariantId,
         categoryId: item.product.categoryId,
+        unitPrice: getEffectivePrice(item.product, item.variant),
+        qty: item.qty,
       })),
     },
     db,

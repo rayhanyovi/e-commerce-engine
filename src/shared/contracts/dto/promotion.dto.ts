@@ -71,6 +71,8 @@ export const ValidateVoucherSchema = z.object({
         productId: z.string().cuid(),
         productVariantId: z.string().cuid(),
         categoryId: z.string().cuid(),
+        unitPrice: z.number().int().min(0),
+        qty: z.number().int().min(1),
       }),
     )
     .default([]),

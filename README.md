@@ -50,7 +50,6 @@ Implemented and active:
 
 Still open:
 
-- `FREE_PRODUCT` promotion support
 - final legacy cutover and archive of `ecommercestarter/`
 
 ## Architecture
@@ -133,7 +132,7 @@ Current automated coverage is focused on engine-critical flows, not placeholder 
 Current baseline on this repo:
 
 - `8` active test files
-- `45` passing tests
+- `46` passing tests
 - no placeholder Vitest scaffolds left in the active suite
 - `3` passing Playwright browser specs, including the dedicated manual QA checklist run
 
@@ -210,12 +209,12 @@ docker build -t ecommerce-engine:latest .
 
 ## Project Docs
 
-- [overview.md](./overview.md): technical positioning, architecture, domain flows, and reuse model
-- [manual_qa_report.md](./manual_qa_report.md): latest scripted QA checklist run and operational notes
-- [parity_checklist.md](./parity_checklist.md): route and endpoint parity matrix against `ecommercestarter`
-- [cutover_plan.md](./cutover_plan.md): criteria for archiving and deleting `ecommercestarter`
-- [to_dos.md](./to_dos.md): migration and implementation backlog
-- [workflow_contract.md](./workflow_contract.md): collaboration and commit rules
+- [overview.md](./docs/overview.md): technical positioning, architecture, domain flows, and reuse model
+- [manual_qa_report.md](./docs/manual_qa_report.md): latest scripted QA checklist run and operational notes
+- [parity_checklist.md](./docs/parity_checklist.md): route and endpoint parity matrix against `ecommercestarter`
+- [cutover_plan.md](./docs/cutover_plan.md): criteria for archiving and deleting `ecommercestarter`
+- [to_dos.md](./docs/to_dos.md): migration and implementation backlog
+- [workflow_contract.md](./docs/workflow_contract.md): collaboration and commit rules
 
 ## Repo Rules
 

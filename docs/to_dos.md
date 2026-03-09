@@ -178,7 +178,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Implement `PromotionUsage` creation saat order sukses.
 - [x] Increment `Promotion.totalUsed` saat voucher benar-benar dipakai.
 - [x] Pastikan per-user limit dan total usage limit benar-benar enforceable.
-- [ ] Putuskan support `FREE_PRODUCT`; saat ini logic diskonnya belum benar-benar ada.
+- [x] Putuskan support `FREE_PRODUCT`; value sekarang berarti jumlah unit eligible termurah yang digratiskan dari item yang sudah ada di cart.
 - [x] Pastikan stacking rule dan `MAX_VOUCHERS_PER_ORDER` dijalankan konsisten.
 
 ## 14. Inventory Domain
