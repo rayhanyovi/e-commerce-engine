@@ -283,7 +283,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 24. Testing
 
-- [ ] Tambahkan unit test untuk domain helpers.
+- [x] Tambahkan unit test untuk domain helpers.
 - [ ] Tambahkan integration test untuk route handlers/server actions penting.
 - [ ] Tambahkan test untuk auth flow.
 - [ ] Tambahkan test untuk cart flow.

@@ -101,6 +101,7 @@ Dengan model ini, effort berikutnya harus lebih banyak di layer UI daripada meng
 npm run dev
 npm run build
 npm run lint
+npm test
 ```
 
 Database bootstrap for local development:
