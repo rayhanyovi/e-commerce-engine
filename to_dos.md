@@ -36,7 +36,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] `JWT_SECRET` atau auth secret baru
 - [x] app base URL
 - [x] upload storage config jika payment proof jadi real upload
-- [ ] Tambahkan config per environment: local, staging, production.
+- [x] Tambahkan config per environment: local, staging, production.
 - [x] Putuskan timezone default, currency default, dan base locale.
 
 ## 4. Database and Prisma

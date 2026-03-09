@@ -91,7 +91,7 @@ npm run lint
 
 Database bootstrap for local development:
 
-1. Copy `.env.example` to `.env.local`.
+1. Copy `.env.local.example` to `.env.local`.
 
 ```bash
 npm run db:migrate
@@ -102,6 +102,13 @@ npm run dev
 Prisma CLI sekarang ikut membaca `.env.local`, jadi migrasi, seed, dan generate tidak lagi butuh `set DATABASE_URL=...` manual.
 
 Kalau di Windows muncul error `EPERM` saat `prisma generate` atau `prisma migrate`, stop dulu `npm run dev`, jalankan command Prisma, lalu start lagi dev server-nya.
+
+Environment templates:
+
+- `.env.example`: generic contract reference
+- `.env.local.example`: local development defaults
+- `.env.staging.example`: staging baseline with non-local URLs
+- `.env.production.example`: production baseline with deployment placeholders
 
 ## Docker
 
