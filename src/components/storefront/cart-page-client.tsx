@@ -302,7 +302,8 @@ export function CartPageClient() {
           </p>
         ) : (
           <p className="mt-4 text-sm leading-6 text-muted">
-            Batch berikutnya akan menyambungkan ringkasan ini ke checkout preview dan order placement.
+            Guest cart tetap didukung, tapi checkout sekarang butuh login sebelum preview dan place
+            order bisa dijalankan.
           </p>
         )}
       </aside>

@@ -241,30 +241,63 @@ export function CheckoutPageClient() {
   }
 
   if (!preview) {
+    const requiresLogin = error === "Authentication required";
+
     return (
       <section className="rounded-[1.75rem] border border-border bg-surface p-8">
         <p className="text-sm uppercase tracking-[0.18em] text-muted">Checkout Preview</p>
         <h1 className="mt-4 text-3xl font-semibold">
-          {error === "Cart is empty" ? "Checkout needs an active cart" : "Checkout is not available"}
+          {requiresLogin
+            ? "Checkout requires login"
+            : error === "Cart is empty"
+              ? "Checkout needs an active cart"
+              : "Checkout is not available"}
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-7 text-muted">
-          {error ??
-            "Preview query failed before a checkout summary could be generated from the active cart."}
+          {requiresLogin
+            ? "Guest cart is still supported, but checkout finalization now requires an authenticated customer. Sign in or create an account first, then your active cart can continue into checkout."
+            : error ??
+              "Preview query failed before a checkout summary could be generated from the active cart."}
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link
-            href="/cart"
-            className="rounded-full bg-accent px-5 py-3 text-sm font-medium text-white"
-          >
-            Review Cart
-          </Link>
-          <button
-            type="button"
-            onClick={() => void loadPreview([], "initial")}
-            className="rounded-full border border-border px-5 py-3 text-sm font-medium text-muted transition hover:text-foreground"
-          >
-            Retry Preview
-          </button>
+          {requiresLogin ? (
+            <>
+              <Link
+                href="/login"
+                className="rounded-full bg-accent px-5 py-3 text-sm font-medium text-white"
+              >
+                Login
+              </Link>
+              <Link
+                href="/register"
+                className="rounded-full border border-border px-5 py-3 text-sm font-medium text-muted transition hover:text-foreground"
+              >
+                Register
+              </Link>
+              <Link
+                href="/cart"
+                className="rounded-full border border-border px-5 py-3 text-sm font-medium text-muted transition hover:text-foreground"
+              >
+                Back to Cart
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/cart"
+                className="rounded-full bg-accent px-5 py-3 text-sm font-medium text-white"
+              >
+                Review Cart
+              </Link>
+              <button
+                type="button"
+                onClick={() => void loadPreview([], "initial")}
+                className="rounded-full border border-border px-5 py-3 text-sm font-medium text-muted transition hover:text-foreground"
+              >
+                Retry Preview
+              </button>
+            </>
+          )}
         </div>
       </section>
     );
@@ -651,9 +684,8 @@ export function CheckoutPageClient() {
         </Link>
 
         <p className="mt-4 text-sm leading-6 text-muted">
-          {preview.allowGuestCheckout
-            ? "Guest checkout is enabled in current store config, but the current order flow still requires authenticated ownership."
-            : "Guest checkout is currently disabled in store config. Order placement will require login unless that setting changes."}
+          Guest cart stays available, but checkout and order placement now require login so order
+          ownership, addresses, and payment review stay tied to a real customer account.
         </p>
       </aside>
     </section>
