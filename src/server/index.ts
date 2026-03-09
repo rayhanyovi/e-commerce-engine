@@ -9,5 +9,6 @@ export * from "@/server/inventory";
 export * from "@/server/orders";
 export * from "@/server/payments";
 export * from "@/server/promotions";
+export * from "@/server/settings";
 export * from "@/server/store-config";
 export * from "@/shared/contracts";

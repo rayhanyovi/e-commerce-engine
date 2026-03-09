@@ -72,6 +72,7 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] `promotions`
 - [x] `inventory`
 - [ ] `settings`
+- [x] `settings`
 - [ ] `audit`
 - [x] Port domain helpers:
 - [x] `getEffectivePrice`
@@ -202,9 +203,9 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 16. Store Config and Settings
 
-- [ ] Port admin settings list.
-- [ ] Port admin settings bulk update.
-- [ ] Tambahkan initialization path untuk default configs.
+- [x] Port admin settings list.
+- [x] Port admin settings bulk update.
+- [x] Tambahkan initialization path untuk default configs.
 - [ ] Pastikan semua config key yang ada benar-benar dipakai business logic.
 - [ ] Hapus config yang tidak lagi relevan setelah auth/checkout decision final.
 

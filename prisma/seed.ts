@@ -1,55 +1,11 @@
 import { hash } from "bcryptjs";
 import { PrismaClient, UserRole } from "@prisma/client";
 
-import { StoreConfigKeys } from "../src/shared/contracts/dto/store-config.dto";
+import { getDefaultStoreConfigSeedData } from "../src/server/store-config";
 
 const prisma = new PrismaClient();
 
-const defaultStoreConfigs: Array<{ key: string; value: string; label: string }> = [
-  { key: StoreConfigKeys.STORE_NAME, value: "My Store", label: "Store Name" },
-  { key: StoreConfigKeys.CURRENCY, value: "IDR", label: "Currency" },
-  { key: StoreConfigKeys.TIMEZONE, value: "Asia/Jakarta", label: "Timezone" },
-  {
-    key: StoreConfigKeys.ALLOW_GUEST_CHECKOUT,
-    value: "false",
-    label: "Allow Guest Checkout",
-  },
-  {
-    key: StoreConfigKeys.MAX_VOUCHERS_PER_ORDER,
-    value: "1",
-    label: "Max Vouchers Per Order",
-  },
-  {
-    key: StoreConfigKeys.ALLOW_VOUCHER_STACKING,
-    value: "false",
-    label: "Allow Voucher Stacking",
-  },
-  {
-    key: StoreConfigKeys.ALLOW_VOUCHER_WITH_PRODUCT_DISCOUNT,
-    value: "true",
-    label: "Allow Voucher With Product Discount",
-  },
-  {
-    key: StoreConfigKeys.FREE_SHIPPING_THRESHOLD,
-    value: "500000",
-    label: "Free Shipping Threshold (IDR)",
-  },
-  {
-    key: StoreConfigKeys.INTERNAL_FLAT_SHIPPING_COST,
-    value: "20000",
-    label: "Flat Shipping Cost (IDR)",
-  },
-  {
-    key: StoreConfigKeys.INTERNAL_FLAT_SHIPPING_ETA_DAYS,
-    value: "2",
-    label: "Shipping ETA (days)",
-  },
-  {
-    key: StoreConfigKeys.PAYMENT_TRANSFER_INSTRUCTIONS,
-    value: "Transfer ke BCA 1234567890 a/n Toko",
-    label: "Payment Transfer Instructions",
-  },
-];
+const defaultStoreConfigs = getDefaultStoreConfigSeedData();
 
 async function seedStoreConfig() {
   for (const config of defaultStoreConfigs) {
