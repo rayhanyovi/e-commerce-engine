@@ -2,6 +2,7 @@ export * from "./address.dto";
 export * from "./auth.dto";
 export * from "./cart.dto";
 export * from "./category.dto";
+export * from "./inventory.dto";
 export * from "./order.dto";
 export * from "./payment.dto";
 export * from "./product.dto";

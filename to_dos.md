@@ -64,13 +64,13 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 - [x] Buat folder server layer, misalnya `src/server/`.
 - [ ] Pisahkan module menjadi:
 - [x] `auth`
-- [ ] `catalog`
+- [x] `catalog`
 - [ ] `cart`
 - [ ] `checkout`
 - [ ] `orders`
 - [ ] `payments`
 - [ ] `promotions`
-- [ ] `inventory`
+- [x] `inventory`
 - [ ] `settings`
 - [ ] `audit`
 - [x] Port domain helpers:
@@ -98,12 +98,12 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 8. Catalog Domain
 
-- [ ] Port category list public.
-- [ ] Port admin category list.
-- [ ] Port category create/update/delete.
-- [ ] Port product public listing dengan pagination, search, category filter, sort, price filter.
-- [ ] Port product detail by slug.
-- [ ] Port admin product list penuh.
+- [x] Port category list public.
+- [x] Port admin category list.
+- [x] Port category create/update/delete.
+- [x] Port product public listing dengan pagination, search, category filter, sort, price filter.
+- [x] Port product detail by slug.
+- [x] Port admin product list penuh.
 - [ ] Port admin product create.
 - [ ] Port admin product edit.
 - [ ] Port admin product delete.
@@ -184,11 +184,11 @@ Dokumen ini adalah backlog migrasi A-Z dari source app `ecommercestarter` ke Nex
 
 ## 14. Inventory Domain
 
-- [ ] Port manual stock adjustment.
-- [ ] Port stock movement list.
-- [ ] Port low stock list.
+- [x] Port manual stock adjustment.
+- [x] Port stock movement list.
+- [x] Port low stock list.
 - [ ] Pastikan stock movement tercatat juga untuk reserve, consume, dan release order.
-- [ ] Tambahkan guard supaya stock tidak pernah negatif.
+- [x] Tambahkan guard supaya stock tidak pernah negatif.
 - [ ] Tambahkan referensi `actorId` dan `referenceId` secara konsisten.
 
 ## 15. Addresses Domain
