@@ -24,7 +24,11 @@
 
 # misc
 .DS_Store
+desktop.ini
 *.pem
+.codex-qa/
+.codex-dev.out.log
+.codex-dev.err.log
 
 # debug
 npm-debug.log*

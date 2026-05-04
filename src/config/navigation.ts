@@ -12,6 +12,7 @@ export const storefrontNav: NavigationItem[] = [
   { href: "/checkout", label: "Checkout" },
   { href: "/addresses", label: "Addresses" },
   { href: "/orders", label: "Orders" },
+  { href: "/docs", label: "Docs" },
   { href: "/profile", label: "Profile" },
 ];
 
